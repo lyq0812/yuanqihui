@@ -355,7 +355,7 @@
                 html += '<article class="listing-card fade-in">' +
                     '<div class="listing-image">' +
                         '<a href="detail.html?id=' + listing.id + '">' +
-                            '<img src="' + img + '" alt="' + escapeHtml(listing.title) + '" loading="lazy">' +
+                            '<img src="' + img + '" alt="' + (listing.title || '') + '" loading="lazy">' +
                         '</a>' +
                         '<div class="listing-tags">' +
                             (tags.includes('急租') ? '<span class="listing-tag urgent">急租</span>' : '') +
@@ -363,14 +363,14 @@
                             (tags.includes('丙二类消防') ? '<span class="listing-tag fire-safety">丙二类</span>' : '') +
                             (tags.includes('可办环评') ? '<span class="listing-tag eia">可办环评</span>' : '') +
                         '</div>' +
-                        '<span class="listing-region">' + escapeHtml(listing.region) + '</span>' +
+                        '<span class="listing-region">' + (listing.region || '') + '</span>' +
                     '</div>' +
                     '<div class="listing-content">' +
-                        '<h3><a href="detail.html?id=' + listing.id + '">' + escapeHtml(listing.title) + '</a></h3>' +
+                        '<h3><a href="detail.html?id=' + listing.id + '">' + (listing.title || '') + '</a></h3>' +
                         '<div class="listing-meta">' +
-                            '<span><i class="fas fa-vector-square"></i> ' + escapeHtml(listing.area) + '㎡</span>' +
-                            '<span><i class="fas fa-ruler-vertical"></i> ' + escapeHtml(listing.height) + '米</span>' +
-                            '<span><i class="fas fa-building"></i> ' + escapeHtml(listing.type) + '</span>' +
+                            '<span><i class="fas fa-vector-square"></i> ' + (listing.area || '') + '㎡</span>' +
+                            '<span><i class="fas fa-ruler-vertical"></i> ' + (listing.height || '') + '米</span>' +
+                            '<span><i class="fas fa-building"></i> ' + (listing.type || '') + '</span>' +
                         '</div>' +
                         '<div class="listing-footer">' +
                             '<div class="listing-price">¥' + localFormatPrice(listing.price) + '<span>/月</span></div>' +
