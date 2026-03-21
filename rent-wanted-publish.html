@@ -302,20 +302,32 @@
             }
             
             const request = {
+                created_at: new Date().toISOString(),
                 title: document.getElementById('rw-title').value,
                 region: document.getElementById('rw-region').value,
-                area: parseInt(document.getElementById('rw-area').value),
+                area: parseInt(document.getElementById('rw-area').value) || 0,
                 budget: parseInt(document.getElementById('rw-budget').value) || 0,
                 type: document.getElementById('rw-type').value,
                 description: document.getElementById('rw-description').value,
                 name: document.getElementById('rw-name').value,
-                contact: document.getElementById('rw-contact').value
+                contact: document.getElementById('rw-contact').value,
+                status: 'approved',
+                user_id: currentUser.id,
+                user_phone: currentUser.phone || currentUser.username
             };
             
             console.log('准备提交求租信息:', request);
-            submitRentWantedRequest(request);
-            alert('发布成功！');
-            document.getElementById('rent-wanted-form').reset();
+            submitRentWantedRequest(request).then(function(success) {
+                if (success) {
+                    alert('发布成功！');
+                    document.getElementById('rent-wanted-form').reset();
+                    setTimeout(function() {
+                        window.location.href = 'rent-wanted-list.html';
+                    }, 1500);
+                } else {
+                    alert('发布失败，请重试');
+                }
+            });
         };
     </script>
     <script>

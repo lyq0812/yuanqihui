@@ -467,18 +467,18 @@
             
             var listing = {
                 id: 'p_' + Date.now(),
-                timestamp: Date.now(),
+                created_at: new Date().toISOString(),
                 title: document.getElementById('listing-title').value,
                 region: document.getElementById('listing-region').value,
-                area: parseInt(document.getElementById('listing-area').value),
+                area: parseInt(document.getElementById('listing-area').value) || 0,
                 height: parseFloat(document.getElementById('listing-height').value) || 6,
-                price: parseInt(document.getElementById('listing-price').value),
+                price: parseInt(document.getElementById('listing-price').value) || 0,
                 type: document.getElementById('listing-type').value,
                 location: document.getElementById('listing-location').value,
                 contact: document.getElementById('listing-contact').value,
                 description: document.getElementById('listing-description').value,
-                fireRating: document.getElementById('listing-fire').value,
-                eiaAvailable: document.getElementById('listing-eia').checked,
+                fire_rating: document.getElementById('listing-fire').value,
+                eia_available: document.getElementById('listing-eia').checked,
                 images: [],
                 status: 'approved',
                 user_id: currentUser.id,
@@ -489,7 +489,7 @@
             if (document.getElementById('tag-urgent').checked) listing.tags.push('急租');
             if (document.getElementById('tag-divisible').checked) listing.tags.push('可分租');
             if (document.getElementById('tag-fire').checked) listing.tags.push('丙二类消防');
-            if (listing.eiaAvailable) listing.tags.push('可办环评');
+            if (listing.eia_available) listing.tags.push('可办环评');
             
             var imageInput = document.getElementById('listing-image');
             if (imageInput.files && imageInput.files[0]) {
@@ -498,7 +498,7 @@
                     listing.images = [e.target.result];
                     window.submitPropertyToDB(listing);
                     alert('发布成功！');
-                    document.getElementById('publish-form').reset();
+                    document.getElementById('publish-form-container').reset();
                     setTimeout(function() {
                         window.location.href = 'listings.html';
                     }, 1500);
@@ -508,7 +508,7 @@
                 listing.images = ['https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800'];
                 window.submitPropertyToDB(listing);
                 alert('发布成功！');
-                document.getElementById('publish-form').reset();
+                document.getElementById('publish-form-container').reset();
                 setTimeout(function() {
                     window.location.href = 'listings.html';
                 }, 1500);
