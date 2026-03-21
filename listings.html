@@ -348,7 +348,37 @@
                 return;
             }
             
-            container.innerHTML = listings.map(function(listing) { return localRenderListingCard(listing); }).join('');
+            var html = '';
+            listings.forEach(function(listing) {
+                var img = listing.images && listing.images.length > 0 ? listing.images[0] : '';
+                var tags = listing.tags || [];
+                html += '<article class="listing-card fade-in">' +
+                    '<div class="listing-image">' +
+                        '<a href="detail.html?id=' + listing.id + '">' +
+                            '<img src="' + img + '" alt="' + escapeHtml(listing.title) + '" loading="lazy">' +
+                        '</a>' +
+                        '<div class="listing-tags">' +
+                            (tags.includes('急租') ? '<span class="listing-tag urgent">急租</span>' : '') +
+                            (tags.includes('可分租') ? '<span class="listing-tag divisible">可分租</span>' : '') +
+                            (tags.includes('丙二类消防') ? '<span class="listing-tag fire-safety">丙二类</span>' : '') +
+                            (tags.includes('可办环评') ? '<span class="listing-tag eia">可办环评</span>' : '') +
+                        '</div>' +
+                        '<span class="listing-region">' + escapeHtml(listing.region) + '</span>' +
+                    '</div>' +
+                    '<div class="listing-content">' +
+                        '<h3><a href="detail.html?id=' + listing.id + '">' + escapeHtml(listing.title) + '</a></h3>' +
+                        '<div class="listing-meta">' +
+                            '<span><i class="fas fa-vector-square"></i> ' + escapeHtml(listing.area) + '㎡</span>' +
+                            '<span><i class="fas fa-ruler-vertical"></i> ' + escapeHtml(listing.height) + '米</span>' +
+                            '<span><i class="fas fa-building"></i> ' + escapeHtml(listing.type) + '</span>' +
+                        '</div>' +
+                        '<div class="listing-footer">' +
+                            '<div class="listing-price">¥' + localFormatPrice(listing.price) + '<span>/月</span></div>' +
+                        '</div>' +
+                    '</div>' +
+                '</article>';
+            });
+            container.innerHTML = html;
         }
         
         let currentPage = 1;
@@ -501,7 +531,15 @@
                 localStorage.setItem(LOCAL_STORAGE_KEYS.LISTINGS, JSON.stringify(allListings));
                 applyFilters();
             }).catch(function(err) {
-                console.error('listings页面：获取云端数据失败', err);
+                console.error('listings页面：获取云端数据失败，尝试使用本地数据', err);
+                // 网络失败时，使用本地存储的数据
+                var localData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.LISTINGS) || '[]');
+                if (localData.length > 0) {
+                    console.log('使用本地缓存数据:', localData.length, '条');
+                    applyFilters();
+                } else {
+                    document.getElementById('listings-container').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h4>无法获取数据</h4><p>请检查网络连接后刷新页面</p></div>';
+                }
             });
             
             checkUserStatus();
