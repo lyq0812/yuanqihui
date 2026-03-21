@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>用户中心 - 园企汇</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="canonical" href="https://lyq0812.github.io/yuanqihui/user.html">
 </head>
 <body>
@@ -13,8 +14,8 @@
     <header class="header">
         <div class="header-top">
             <div class="container">
-                <span style="color: white;"><i class="fas fa-map-marker-alt" style="color: white;"></i> 陕西厂房出租信息平台</span>
-                <span style="float: right; color: white;"><i class="fas fa-clock" style="color: white;"></i> 工作时间: 9:00-18:00</span>
+                <span><i class="fas fa-map-marker-alt"></i> 陕西厂房出租信息平台</span>
+                <span style="float: right;"><i class="fas fa-clock"></i> 工作时间: 9:00-18:00</span>
             </div>
         </div>
         <div class="header-main">
@@ -54,22 +55,27 @@
         </div>
     </header>
     
-    <!-- 移动端导航 -->
+    <!-- Mobile Navigation -->
     <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
     <div class="mobile-nav" id="mobile-nav">
         <div class="mobile-nav-header">
-            <span>菜单</span>
-            <button class="mobile-nav-close" id="mobile-nav-close"><i class="fas fa-times"></i></button>
+            <h3><i class="fas fa-bars"></i> 导航菜单</h3>
+            <button class="mobile-nav-close" id="mobile-nav-close">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <nav class="mobile-nav-menu">
-            <a href="index.html"><i class="fas fa-home"></i> 首页</a>
-            <a href="listings.html"><i class="fas fa-building"></i> 房源信息</a>
-            <a href="rent-wanted-list.html"><i class="fas fa-search"></i> 求租信息</a>
-            <a href="publish.html"><i class="fas fa-plus-circle"></i> 发布房源</a>
-            <a href="user.html" id="user-center-link"><i class="fas fa-user"></i> 用户中心</a>
-            <a href="#" onclick="logout(); return false;" style="color: #ef4444;" id="logout-link"><i class="fas fa-sign-out-alt"></i> 退出</a>
-            <a href="#" onclick="showAuthModal(); return false;" id="login-link"><i class="fas fa-sign-in-alt"></i> 登录/注册</a>
-        </nav>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-home"></i> 首页</a></li>
+            <li><a href="listings.html"><i class="fas fa-building"></i> 厂房房源</a></li>
+            <li><a href="publish.html"><i class="fas fa-plus-circle"></i> 发布厂房</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> 联系我们</a></li>
+            <li><a href="admin.html"><i class="fas fa-cog"></i> 管理后台</a></li>
+            <li style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                <a href="tel:13379308568" style="color: #ef4444; font-weight: 700;">
+                    <i class="fas fa-phone-alt"></i> 13379308568
+                </a>
+            </li>
+        </ul>
     </div>
 
     <main class="main-content" style="min-height: 60vh; padding: 2rem 0;">
