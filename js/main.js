@@ -18,8 +18,8 @@ function getSupabase() {
         if (typeof window !== 'undefined' && window.supabase) {
             try {
                 supabaseClient = window.supabase.createClient(
-                    'https://enxfuiaicradjczhfdeb.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVueGZ1aWFpY3JhZGpjemhmZGViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTY2MTcsImV4cCI6MjA4ODczMjYxN30.3ruELNP9PzvDr2HrrLboDDHu2rEtdIz2m3TcvnPfHoY'
+                    'https://tysrmpssxrdjgrubkltj.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
                 );
                 console.log('Supabase 初始化成功');
             } catch (e) {

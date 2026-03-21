@@ -1,7 +1,63 @@
 var currentUser = null;
 
+// Supabase配置
+const SUPABASE_URL = 'https://tysrmpssxrdjgrubkltj.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc';
+
 function getSupabase() {
-    return { from: function() { return { select: function() { return Promise.resolve({data:[]}); }, insert: function() { return Promise.resolve({error:null}); }, update: function() { return {eq: function() { return Promise.resolve({error:null}); }}; } }; } };
+    return {
+        from: function(table) {
+            return {
+                select: function(columns) {
+                    return {
+                        then: function(resolve) {
+                            fetch(SUPABASE_URL + '/rest/v1/' + table + '?select=' + columns, {
+                                headers: {
+                                    'apikey': SUPABASE_KEY,
+                                    'Authorization': 'Bearer ' + SUPABASE_KEY
+                                }
+                            }).then(r => r.json()).then(data => resolve({data: data, error: null}));
+                        }
+                    };
+                },
+                insert: function(data) {
+                    return {
+                        then: function(resolve) {
+                            fetch(SUPABASE_URL + '/rest/v1/' + table, {
+                                method: 'POST',
+                                headers: {
+                                    'apikey': SUPABASE_KEY,
+                                    'Authorization': 'Bearer ' + SUPABASE_KEY,
+                                    'Content-Type': 'application/json',
+                                    'Prefer': 'return=representation'
+                                },
+                                body: JSON.stringify(data)
+                            }).then(r => r.json()).then(data => resolve({data: data, error: null}));
+                        }
+                    };
+                },
+                update: function(data) {
+                    return {
+                        eq: function(field, value) {
+                            return {
+                                then: function(resolve) {
+                                    fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + field + '.eq.' + value, {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'apikey': SUPABASE_KEY,
+                                            'Authorization': 'Bearer ' + SUPABASE_KEY,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify(data)
+                                    }).then(r => r.json()).then(data => resolve({data: data, error: null}));
+                                }
+                            };
+                        }
+                    };
+                }
+            };
+        }
+    };
 }
 
 function initAuth() {
@@ -16,34 +72,17 @@ function initAuth() {
     }
 }
 
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('yqh_user');
-    updateNavForAuth();
-    window.location.reload();
-}
-
-function updateNavForAuth() {
-    var authBtn = document.getElementById('auth-btn');
-    if (!authBtn) return;
-    
-    if (currentUser) {
-        authBtn.innerHTML = '<i class="fas fa-user-circle"></i> ' + (currentUser.username || currentUser.phone);
-        authBtn.onclick = function() { logout(); };
-    }
-}
-
-function showLoginModal() {
+function showAuthModal() {
     var modal = document.getElementById('auth-modal');
     if (modal) {
-        modal.style.display = 'flex';
+        modal.classList.add('active');
     }
 }
 
 function closeAuthModal() {
     var modal = document.getElementById('auth-modal');
     if (modal) {
-        modal.style.display = 'none';
+        modal.classList.remove('active');
     }
 }
 
@@ -52,32 +91,38 @@ function doLogin() {
     var password = document.getElementById('login-password').value;
     
     if (!username || !password) {
-        alert('请填写用户名和密码');
+        alert('请输入用户名和密码');
         return;
     }
     
     var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
-    var user = users.find(function(u) { return u.username === username || u.phone === username; });
+    var user = users.find(function(u) { return u.username === username && u.password === password; });
     
-    if (!user) {
-        alert('用户不存在，请先注册');
-        return;
-    }
-    
-    if (user.password !== password) {
-        alert('密码错误');
-        return;
-    }
-
-    localStorage.setItem('yqh_user', JSON.stringify(user));
-    currentUser = user;
-    updateNavForAuth();
-    closeAuthModal();
-    alert('登录成功！');
-    if (typeof checkUserStatus === 'function') {
-        checkUserStatus();
+    if (user) {
+        localStorage.setItem('yqh_user', JSON.stringify(user));
+        currentUser = user;
+        updateNavForAuth();
+        closeAuthModal();
     } else {
-        window.location.reload();
+        // 尝试从云端验证
+        getSupabase().from('users').select('*').then(function(result) {
+            var cloudUser = result.data.find(function(u) { return u.username === username && u.password === password; });
+            if (cloudUser) {
+                localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                currentUser = cloudUser;
+                updateNavForAuth();
+                closeAuthModal();
+                
+                // 保存到本地
+                var localUsers = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+                if (!localUsers.find(function(u) { return u.username === username; })) {
+                    localUsers.push(cloudUser);
+                    localStorage.setItem('yqh_users', JSON.stringify(localUsers));
+                }
+            } else {
+                alert('用户名或密码错误');
+            }
+        });
     }
 }
 
@@ -112,7 +157,7 @@ function doRegister() {
     }
     
     var newUser = {
-        id: Date.now(),
+        id: 'usr_' + Date.now(),
         username: username,
         phone: phone,
         password: password,
@@ -120,33 +165,51 @@ function doRegister() {
         created_at: new Date().toISOString()
     };
     
+    // 保存到本地
     users.push(newUser);
     localStorage.setItem('yqh_users', JSON.stringify(users));
-    
     localStorage.setItem('yqh_user', JSON.stringify(newUser));
     currentUser = newUser;
+    
+    // 保存到云端
+    getSupabase().from('users').insert([newUser]).then(function(result) {
+        console.log('注册到云端:', result);
+    });
+    
     updateNavForAuth();
     closeAuthModal();
-    alert('注册成功！');
-    if (typeof checkUserStatus === 'function') {
-        checkUserStatus();
+}
+
+function doLogout() {
+    localStorage.removeItem('yqh_user');
+    currentUser = null;
+    updateNavForAuth();
+    window.location.reload();
+}
+
+function updateNavForAuth() {
+    var authBtn = document.getElementById('auth-btn');
+    var userInfo = document.getElementById('user-info');
+    
+    if (!authBtn || !userInfo) return;
+    
+    if (currentUser) {
+        authBtn.style.display = 'none';
+        userInfo.style.display = 'flex';
+        var usernameSpan = document.getElementById('username-display');
+        if (usernameSpan) usernameSpan.textContent = currentUser.username;
     } else {
-        window.location.reload();
+        authBtn.style.display = 'block';
+        userInfo.style.display = 'none';
     }
 }
 
-function showRegister() {
+function switchToLogin() {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('register-form').style.display = 'none';
+}
+
+function switchToRegister() {
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('register-form').style.display = 'block';
-}
-
-function showLogin() {
-    document.getElementById('register-form').style.display = 'none';
-    document.getElementById('login-form').style.display = 'block';
-}
-
-if (window.addEventListener) {
-    window.addEventListener('load', initAuth);
-} else if (window.attachEvent) {
-    window.attachEvent('onload', initAuth);
 }
