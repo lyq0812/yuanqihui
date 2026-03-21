@@ -430,6 +430,33 @@
             }
         };
         
+        // 提交到云端
+        window.submitPropertyToDB = async function(property) {
+            try {
+                var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify(property)
+                });
+                
+                if (response.ok) {
+                    console.log('房源已保存到云端');
+                    return true;
+                } else {
+                    console.error('保存失败:', response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error('保存异常:', error);
+                return false;
+            }
+        };
+        
         // 提交函数
         window.submitListingForm = function() {
             if (!currentUser) {
@@ -438,8 +465,7 @@
                 return;
             }
             
-            const listing = {
-                // 让云端与本地使用同一个 id，避免详情页取不到或列表重复。
+            var listing = {
                 id: 'p_' + Date.now(),
                 timestamp: Date.now(),
                 title: document.getElementById('listing-title').value,
@@ -465,67 +491,29 @@
             if (document.getElementById('tag-fire').checked) listing.tags.push('丙二类消防');
             if (listing.eiaAvailable) listing.tags.push('可办环评');
             
-            // 使用上传的图片
-            const imageInput = document.getElementById('listing-image');
+            var imageInput = document.getElementById('listing-image');
             if (imageInput.files && imageInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
                     listing.images = [e.target.result];
-                    await submitPropertyToDB(listing);
-                    submitListing(listing);
+                    window.submitPropertyToDB(listing);
                     alert('发布成功！');
-                    document.getElementById('publish-form-container').reset();
-                    document.getElementById('image-preview').style.display = 'none';
-                    showModal('success-modal');
+                    document.getElementById('publish-form').reset();
                     setTimeout(function() {
                         window.location.href = 'listings.html';
                     }, 1500);
                 };
                 reader.readAsDataURL(imageInput.files[0]);
-                return;
             } else {
-                // 如果没有上传图片，使用默认图片
                 listing.images = ['https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800'];
+                window.submitPropertyToDB(listing);
+                alert('发布成功！');
+                document.getElementById('publish-form').reset();
+                setTimeout(function() {
+                    window.location.href = 'listings.html';
+                }, 1500);
             }
-            
-            submitPropertyToDB(listing);
-            submitListing(listing);
-            alert('发布成功！');
-            document.getElementById('publish-form-container').reset();
-            showModal('success-modal');
-            
-            // 发布成功后跳转到房源列表页面
-            setTimeout(function() {
-                window.location.href = 'listings.html';
-            }, 1500);
         };
-        
-        // 提交到云端
-        async function submitPropertyToDB(property) {
-            try {
-                var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties', {
-                    method: 'POST',
-                    headers: {
-                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify(property)
-                });
-                
-                if (response.ok) {
-                    console.log('房源已保存到云端');
-                    return true;
-                } else {
-                    console.error('保存失败:', response.status);
-                    return false;
-                }
-            } catch (error) {
-                console.error('保存异常:', error);
-                return false;
-            }
-        }
         
         // 绑定提交按钮事件
         document.getElementById('submit-btn').addEventListener('click', function() {
