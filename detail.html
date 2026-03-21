@@ -203,6 +203,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <style>
         .btn-login, .btn-user {
@@ -257,8 +258,31 @@
         }
         
         const listingId = getUrlParam('id');
-        // 供 inline onclick 使用（顶部 const 不一定挂到 window 上）
         window.listingId = listingId;
+        
+        async function renderDetailPage(id) {
+            if (!id) {
+                document.getElementById('detail-title').textContent = '房源不存在';
+                return;
+            }
+            
+            const listings = await getApprovedListings();
+            const listing = listings.find(l => l.id === id);
+            
+            if (!listing) {
+                document.getElementById('detail-title').textContent = '房源不存在';
+                return;
+            }
+            
+            document.getElementById('detail-title').textContent = listing.title;
+            document.getElementById('detail-price').innerHTML = '¥' + formatPrice(listing.price) + '<span>/月</span>';
+            document.getElementById('detail-area').textContent = listing.area + '㎡';
+            document.getElementById('detail-region').textContent = listing.region || '未知';
+            document.getElementById('detail-location').textContent = listing.location || '未知';
+            document.getElementById('detail-description').textContent = listing.description || '暂无详细描述';
+            document.getElementById('contact-name').textContent = listing.contact || '暂无';
+            document.getElementById('contact-phone').innerHTML = listing.contact ? '<a href="tel:' + listing.contact + '">' + listing.contact + '</a>' : '暂无';
+        }
         
         async function renderCurrentPage() {
             await renderDetailPage(listingId);
