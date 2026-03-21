@@ -115,6 +115,7 @@ async function doLogin() {
     
     // 检查云端
     try {
+        console.log('正在查询云端，用户名:', username);
         const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*', {
             headers: {
                 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
@@ -122,8 +123,10 @@ async function doLogin() {
             }
         });
         const cloudUsers = await response.json();
+        console.log('云端返回数据:', cloudUsers);
         
         user = cloudUsers.find(u => u.username === username && u.password === password);
+        console.log('找到用户:', user);
         
         if (user) {
             localStorage.setItem('yqh_user', JSON.stringify(user));
