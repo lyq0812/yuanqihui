@@ -166,8 +166,16 @@ async function doLogin() {
         
         if (response.ok) {
             const cloudUsers = await response.json();
+            console.log('云端用户数据:', cloudUsers);
+            
             if (Array.isArray(cloudUsers)) {
-                user = cloudUsers.find(u => (u.username === username || u.phone === username) && u.password === password);
+                // 先按手机号查找
+                user = cloudUsers.find(u => u.phone === username && u.password === password);
+                // 再按用户名查找
+                if (!user) {
+                    user = cloudUsers.find(u => u.username === username && u.password === password);
+                }
+                console.log('查找结果:', user);
             }
         }
         

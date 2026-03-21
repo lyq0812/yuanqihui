@@ -214,7 +214,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/auth.js"></script>
-    <script src="js/main.js"></script>
     <script>
         function checkLogin() {
             const session = localStorage.getItem('yqh_user');
@@ -524,7 +523,15 @@
             // 未登录用户的立即登录按钮
             const guestLoginBtn = document.getElementById('guest-login-btn');
             if (guestLoginBtn) {
-                guestLoginBtn.addEventListener('click', showAuthModal);
+                guestLoginBtn.onclick = function() {
+                    if (typeof showAuthModal === 'function') {
+                        showAuthModal();
+                    } else if (typeof showLoginModal === 'function') {
+                        showLoginModal();
+                    } else {
+                        alert('登录功能加载中，请稍候再试');
+                    }
+                };
             }
             
             const menuBtn = document.getElementById('mobile-menu-btn');
