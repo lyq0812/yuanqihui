@@ -117,7 +117,8 @@ function doLogin() {
         updateNavForAuth();
         closeAuthModal();
     } else {
-        // 尝试从云端验�?        getSupabase().from('users').select('*').then(function(result) {
+        // 尝试从云端验证
+        getSupabase().from('users').select('*').then(function(result) {
             var cloudUser = result.data.find(function(u) { return u.username === username && u.password === password; });
             if (cloudUser) {
                 localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
@@ -125,7 +126,8 @@ function doLogin() {
                 updateNavForAuth();
                 closeAuthModal();
                 
-                // 保存到本�?                var localUsers = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+                // 保存到本地
+                var localUsers = JSON.parse(localStorage.getItem('yqh_users') || '[]');
                 if (!localUsers.find(function(u) { return u.username === username; })) {
                     localUsers.push(cloudUser);
                     localStorage.setItem('yqh_users', JSON.stringify(localUsers));
@@ -144,7 +146,7 @@ function doRegister() {
     var confirmPassword = document.getElementById('reg-confirm-password').value;
     
     if (!username || username.length < 4) {
-        alert('用户名至少需�?个字�?);
+        alert('用户名至少需要4个字符');
         return;
     }
     if (!/^1[3-9]\d{9}$/.test(phone)) {
@@ -152,18 +154,18 @@ function doRegister() {
         return;
     }
     if (!password || password.length < 6) {
-        alert('密码至少需�?个字�?);
+        alert('密码至少需要6个字符');
         return;
     }
     if (password !== confirmPassword) {
-        alert('两次输入的密码不一�?);
+        alert('两次输入的密码不一致');
         return;
     }
     
     var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
     var existingUser = users.find(function(u) { return u.username === username || u.phone === phone; });
     if (existingUser) {
-        alert('用户名或手机号已被注�?);
+        alert('用户名或手机号已被注册');
         return;
     }
     
