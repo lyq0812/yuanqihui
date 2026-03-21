@@ -251,7 +251,11 @@
                 localStorage.setItem('yqh_user', JSON.stringify(user));
                 alert('登录成功');
                 closeAuthModal();
-                window.location.reload();
+                // 先更新页面显示，再刷新
+                checkLogin();
+                setTimeout(function() {
+                    window.location.reload();
+                }, 100);
                 return false;
             }
             
@@ -280,7 +284,10 @@
                     localStorage.setItem('yqh_user', JSON.stringify(user));
                     alert('登录成功');
                     closeAuthModal();
-                    window.location.reload();
+                    checkLogin();
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 100);
                 } else {
                     alert('用户名或密码错误');
                 }
@@ -431,7 +438,10 @@
             if (user) {
                 localStorage.setItem('yqh_user', JSON.stringify(user));
                 alert('登录成功');
-                window.location.reload();
+                checkLogin();
+                setTimeout(function() {
+                    window.location.reload();
+                }, 100);
                 return;
             }
             
@@ -459,7 +469,10 @@
                     }
                     localStorage.setItem('yqh_user', JSON.stringify(user));
                     alert('登录成功');
-                    window.location.reload();
+                    checkLogin();
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 100);
                 } else {
                     alert('用户名或密码错误');
                 }
