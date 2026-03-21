@@ -10,19 +10,24 @@ function getSupabase() {
             return {
                 select: function(columns) {
                     return {
-                        then: function(resolve) {
+                        then: function(resolve, reject) {
                             fetch(SUPABASE_URL + '/rest/v1/' + table + '?select=' + columns, {
                                 headers: {
                                     'apikey': SUPABASE_KEY,
                                     'Authorization': 'Bearer ' + SUPABASE_KEY
                                 }
-                            }).then(r => r.json()).then(data => resolve({data: data, error: null}));
+                            }).then(r => {
+                                if (!r.ok) {
+                                    r.text().then(t => console.error('Select error:', r.status, t));
+                                }
+                                return r.json();
+                            }).then(data => resolve({data: data, error: null})).catch(err => resolve({data: [], error: err}));
                         }
                     };
                 },
                 insert: function(data) {
                     return {
-                        then: function(resolve) {
+                        then: function(resolve, reject) {
                             fetch(SUPABASE_URL + '/rest/v1/' + table, {
                                 method: 'POST',
                                 headers: {
@@ -32,7 +37,18 @@ function getSupabase() {
                                     'Prefer': 'return=representation'
                                 },
                                 body: JSON.stringify(data)
-                            }).then(r => r.json()).then(data => resolve({data: data, error: null}));
+                            }).then(r => {
+                                if (!r.ok) {
+                                    r.text().then(t => {
+                                        console.error('Insert error:', r.status, t);
+                                        alert('注册失败: ' + t);
+                                    });
+                                }
+                                return r.json();
+                            }).then(data => resolve({data: data, error: null})).catch(err => {
+                                console.error('Insert catch:', err);
+                                resolve({data: [], error: err});
+                            });
                         }
                     };
                 },
@@ -172,8 +188,14 @@ function doRegister() {
     currentUser = newUser;
     
     // 保存到云端
+    console.log('正在注册到云端:', newUser);
     getSupabase().from('users').insert([newUser]).then(function(result) {
-        console.log('注册到云端:', result);
+        console.log('注册结果:', result);
+        if (result.error) {
+            alert('云端注册失败: ' + result.error);
+        } else {
+            alert('注册成功！');
+        }
     });
     
     updateNavForAuth();
