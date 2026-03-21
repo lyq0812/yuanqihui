@@ -93,7 +93,16 @@ async function getApprovedListings() {
         
         var localListings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
         
-        var allListings = dbListings.concat(localListings);
+        // 去重
+        var allListings = [];
+        var seen = {};
+        dbListings.concat(localListings).forEach(function(item) {
+            var key = String(item.id);
+            if (!seen[key]) {
+                seen[key] = true;
+                allListings.push(item);
+            }
+        });
         return allListings;
     } catch (error) {
         console.error('获取数据失败', error);
