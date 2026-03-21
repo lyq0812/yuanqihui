@@ -418,8 +418,13 @@
         
         // 渲染首页房源
         async function renderHomeListings() {
-            const listings = (await getApprovedListings()).slice(0, 6);
-            renderListingsGrid(listings, 'home-listings');
+            try {
+                var listings = await getApprovedListings();
+                console.log('首页房源数据:', listings);
+                renderListingsGrid(listings.slice(0, 6), 'home-listings');
+            } catch(e) {
+                console.error('加载失败:', e);
+            }
         }
         
         // 地区筛选

@@ -113,7 +113,7 @@
                     </div>
                     
                     <div class="tab-content">
-                        <div class="tab-pane active" id="listings-tab">
+                        <div class="tab-pane" id="listings-tab" style="display: block;">
                             <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
                                 <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-building" style="color: #667eea;"></i> 我的房源</h3>
                                 <a href="publish.html" class="btn-call" style="padding: 0.5rem 1rem; font-size: 0.9rem;"><i class="fas fa-plus"></i> 发布新房源</a>
@@ -121,7 +121,7 @@
                             <div id="my-listings"></div>
                         </div>
                         
-                        <div class="tab-pane" id="wanted-tab">
+                        <div class="tab-pane" id="wanted-tab" style="display: none;">
                             <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
                                 <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-search" style="color: #667eea;"></i> 我的求租</h3>
                                 <a href="rent-wanted-publish.html" class="btn-call" style="padding: 0.5rem 1rem; font-size: 0.9rem;"><i class="fas fa-plus"></i> 发布求租</a>
@@ -129,7 +129,7 @@
                             <div id="my-wanted"></div>
                         </div>
                         
-                        <div class="tab-pane" id="favorites-tab">
+                        <div class="tab-pane" id="favorites-tab" style="display: none;">
                             <div class="section-header" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
                                 <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-heart" style="color: #667eea;"></i> 我的收藏</h3>
                             </div>
@@ -251,11 +251,13 @@
                 localStorage.setItem('yqh_user', JSON.stringify(user));
                 alert('登录成功');
                 closeAuthModal();
-                // 先更新页面显示，再刷新
-                checkLogin();
-                setTimeout(function() {
-                    window.location.reload();
-                }, 100);
+                // 直接更新页面显示
+                document.getElementById('user-info').style.display = 'block';
+                document.getElementById('guest-info').style.display = 'none';
+                var nameDisplay = document.getElementById('user-name-display');
+                if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                var phoneDisplay = document.getElementById('user-phone-display');
+                if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
                 return false;
             }
             
@@ -284,10 +286,12 @@
                     localStorage.setItem('yqh_user', JSON.stringify(user));
                     alert('登录成功');
                     closeAuthModal();
-                    checkLogin();
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 100);
+                    document.getElementById('user-info').style.display = 'block';
+                    document.getElementById('guest-info').style.display = 'none';
+                    var nameDisplay = document.getElementById('user-name-display');
+                    if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                    var phoneDisplay = document.getElementById('user-phone-display');
+                    if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
                 } else {
                     alert('用户名或密码错误');
                 }
@@ -438,10 +442,12 @@
             if (user) {
                 localStorage.setItem('yqh_user', JSON.stringify(user));
                 alert('登录成功');
-                checkLogin();
-                setTimeout(function() {
-                    window.location.reload();
-                }, 100);
+                document.getElementById('user-info').style.display = 'block';
+                document.getElementById('guest-info').style.display = 'none';
+                var nameDisplay = document.getElementById('user-name-display');
+                if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                var phoneDisplay = document.getElementById('user-phone-display');
+                if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
                 return;
             }
             
@@ -469,10 +475,12 @@
                     }
                     localStorage.setItem('yqh_user', JSON.stringify(user));
                     alert('登录成功');
-                    checkLogin();
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 100);
+                    document.getElementById('user-info').style.display = 'block';
+                    document.getElementById('guest-info').style.display = 'none';
+                    var nameDisplay = document.getElementById('user-name-display');
+                    if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                    var phoneDisplay = document.getElementById('user-phone-display');
+                    if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
                 } else {
                     alert('用户名或密码错误');
                 }
@@ -852,10 +860,16 @@
             
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    document.querySelectorAll('.tab-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.style.borderBottom = 'none';
+                        b.style.color = 'var(--gray-600)';
+                    });
+                    document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
                     this.classList.add('active');
-                    document.getElementById(this.dataset.tab + '-tab').classList.add('active');
+                    this.style.borderBottom = '2px solid var(--primary)';
+                    this.style.color = 'var(--gray-800)';
+                    document.getElementById(this.dataset.tab + '-tab').style.display = 'block';
                 });
             });
             
