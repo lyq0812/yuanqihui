@@ -490,19 +490,24 @@
         
         // 页面初始化
         function initListingPage() {
-            // 直接使用本地函数初始化
             initFiltersFromUrl();
             initAuth();
             document.getElementById('sort-order').addEventListener('change', applyFilters);
             
-            // 页面加载时自动刷新数据
-            applyFilters();
+            // 页面加载时先从云端获取数据
+            getApprovedListings().then(function(allListings) {
+                localStorage.setItem(LOCAL_STORAGE_KEYS.LISTINGS, JSON.stringify(allListings));
+                applyFilters();
+            });
             
             checkUserStatus();
             
             // 每30秒自动刷新一次
             setInterval(function() {
-                applyFilters();
+                getApprovedListings().then(function(allListings) {
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.LISTINGS, JSON.stringify(allListings));
+                    applyFilters();
+                });
             }, 30000);
         }
         
