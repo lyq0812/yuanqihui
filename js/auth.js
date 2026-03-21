@@ -243,4 +243,9 @@
         div.textContent = value;
         return div.innerHTML;
     };
+    
+    window.getUrlParam = function(name) {
+        var url = new URL(window.location.href);
+        return url.searchParams.get(name) || '';
+    };
 })();
