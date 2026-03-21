@@ -646,7 +646,12 @@ function submitMessage(message) {
 // 工具函数
 // =====================
 function formatPrice(price) {
-    return price ? price.toLocaleString('zh-CN') : '0';
+    if (!price) return '面议';
+    if (price === '0') return '面议';
+    if (typeof price === 'string' && price.includes('-')) {
+        return price.replace('-', '-') + '元';
+    }
+    return price.toLocaleString('zh-CN');
 }
 
 function formatDate(timestamp) {
@@ -870,7 +875,7 @@ function initPublishForm(formId) {
             region: document.getElementById('listing-region').value,
             area: parseInt(document.getElementById('listing-area').value),
             height: parseFloat(document.getElementById('listing-height').value) || 6,
-            price: parseInt(document.getElementById('listing-price').value),
+            price: document.getElementById('listing-price').value,
             type: document.getElementById('listing-type').value,
             location: document.getElementById('listing-location').value,
             contact: document.getElementById('listing-contact').value,
@@ -919,7 +924,7 @@ function initRentWantedForm(formId) {
             title: document.getElementById('rw-title').value,
             region: document.getElementById('rw-region').value,
             area: parseInt(document.getElementById('rw-area').value),
-            budget: parseInt(document.getElementById('rw-budget').value) || 0,
+            budget: document.getElementById('rw-budget').value,
             type: document.getElementById('rw-type').value,
             description: document.getElementById('rw-description').value,
             name: document.getElementById('rw-name').value,

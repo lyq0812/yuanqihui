@@ -133,8 +133,17 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>月租金(元) <span class="required">*</span></label>
-                        <input type="number" id="listing-price" placeholder="请输入月租金" required>
+                        <label>月租金(元)</label>
+                        <select id="listing-price" required>
+                            <option value="">请选择</option>
+                            <option value="0">面议</option>
+                            <option value="1-5000">1-5000元</option>
+                            <option value="5000-10000">5000-10000元</option>
+                            <option value="10000-20000">1-2万元</option>
+                            <option value="20000-50000">2-5万元</option>
+                            <option value="50000-100000">5-10万元</option>
+                            <option value="100000">10万元以上</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
