@@ -495,9 +495,13 @@
             document.getElementById('sort-order').addEventListener('change', applyFilters);
             
             // 页面加载时先从云端获取数据
+            console.log('listings页面：正在获取云端数据...');
             getApprovedListings().then(function(allListings) {
+                console.log('listings页面：获取到云端数据', allListings.length, '条');
                 localStorage.setItem(LOCAL_STORAGE_KEYS.LISTINGS, JSON.stringify(allListings));
                 applyFilters();
+            }).catch(function(err) {
+                console.error('listings页面：获取云端数据失败', err);
             });
             
             checkUserStatus();

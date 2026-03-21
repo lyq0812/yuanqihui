@@ -350,9 +350,13 @@ function renderListingsGrid(listings, containerId) {
     }
     
     container.innerHTML = listings.map(function(listing) {
+        var imageHtml = '<div class="no-image"><i class="fas fa-building"></i></div>';
+        if (listing.images && listing.images.length > 0) {
+            imageHtml = '<img src="' + listing.images[0] + '" alt="' + escapeHtml(listing.title) + '" style="width:100%;height:100%;object-fit:cover;">';
+        }
         return '<div class="listing-card">' +
             '<div class="listing-image">' +
-                '<div class="no-image"><i class="fas fa-building"></i></div>' +
+                imageHtml +
             '</div>' +
             '<div class="listing-content">' +
                 '<h3><a href="detail.html?id=' + listing.id + '">' + escapeHtml(listing.title) + '</a></h3>' +
@@ -399,5 +403,59 @@ async function loadHomePage() {
         renderListingsGrid(allListings.slice(0, 6), 'featured-listings');
     } catch(e) {
         console.error('加载失败', e);
+    }
+}
+
+// 保存求租信息到云端
+async function submitRentWantedRequest(request) {
+    try {
+        var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests', {
+            method: 'POST',
+            headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(request)
+        });
+        
+        if (response.ok) {
+            console.log('求租信息保存成功');
+            return true;
+        } else {
+            console.error('保存失败:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('保存异常:', error);
+        return false;
+    }
+}
+
+// 保存房源信息到云端
+async function submitPropertyRequest(property) {
+    try {
+        var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties', {
+            method: 'POST',
+            headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(property)
+        });
+        
+        if (response.ok) {
+            console.log('房源信息保存成功');
+            return true;
+        } else {
+            console.error('保存失败:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('保存异常:', error);
+        return false;
     }
 }

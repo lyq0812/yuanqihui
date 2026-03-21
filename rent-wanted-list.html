@@ -539,16 +539,13 @@
         // 从云端获取已批准的求租
         async function getApprovedWantedFromDB() {
             try {
-                const supabase = getSupabase();
-                const { data, error } = await supabase
-                    .from('requests')
-                    .select('*')
-                    .eq('status', 'approved')
-                    .order('created_at', { ascending: false });
-                if (error) {
-                    console.log('从云端获取求租信息失败:', error);
-                    return [];
-                }
+                const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?select=*&status=eq.approved&order=created_at.desc', {
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                    }
+                });
+                const data = await response.json();
                 console.log('从云端获取到求租信息:', data?.length || 0, '条');
                 return data || [];
             } catch (err) {
