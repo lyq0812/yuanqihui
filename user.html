@@ -462,15 +462,56 @@
             });
         }
 
-        // 获取数据
-        function getListings() {
-            const data = localStorage.getItem('yqh_listings');
-            return data ? JSON.parse(data) : [];
+        // 获取数据 - 从云端和本地合并
+        async function getListings() {
+            const localData = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+            
+            // 从云端获取
+            try {
+                const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=*', {
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                    }
+                });
+                const cloudData = await response.json();
+                
+                // 合并去重
+                const allData = [...cloudData];
+                localData.forEach(local => {
+                    if (!allData.find(d => d.id === local.id)) {
+                        allData.push(local);
+                    }
+                });
+                return allData;
+            } catch (e) {
+                console.log('云端获取失败', e);
+                return localData;
+            }
         }
 
-        function getWantedList() {
-            const data = localStorage.getItem('yqh_rent_wanted');
-            return data ? JSON.parse(data) : [];
+        async function getWantedList() {
+            const localData = JSON.parse(localStorage.getItem('yqh_rent_wanted') || '[]');
+            
+            try {
+                const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?select=*', {
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                    }
+                });
+                const cloudData = await response.json();
+                
+                const allData = [...cloudData];
+                localData.forEach(local => {
+                    if (!allData.find(d => d.id === local.id)) {
+                        allData.push(local);
+                    }
+                });
+                return allData;
+            } catch (e) {
+                return localData;
+            }
         }
 
         function getUsers() {
@@ -490,7 +531,7 @@
             console.log('当前用户:', user);
             console.log('用户ID:', user.id);
             
-            const allListings = getListings();
+            const allListings = await getListings();
             console.log('所有房源:', JSON.stringify(allListings, null, 2));
             
             // 调试信息
@@ -545,12 +586,12 @@
         }
 
         // 渲染我的求租
-        function renderMyWanted() {
+        async function renderMyWanted() {
             const session = localStorage.getItem('yqh_user');
             if (!session) return;
             
             const user = JSON.parse(session);
-            const wanted = getWantedList().filter(w => w.user_id === user.id || !w.user_id);
+            const wanted = (await getWantedList()).filter(w => w.user_id === user.id || !w.user_id);
             const container = document.getElementById('my-wanted');
             
             if (wanted.length === 0) {
@@ -579,7 +620,7 @@
         }
 
         // 删除我的房源
-        function deleteMyListing(id) {
+        async function deleteMyListing(id) {
             const session = localStorage.getItem('yqh_user');
             if (!session) {
                 alert('请先登录');
@@ -587,7 +628,7 @@
             }
             const user = JSON.parse(session);
             
-            const listings = getListings();
+            const listings = await getListings();
             const listing = listings.find(l => l.id === id);
             
             if (!listing) {
@@ -595,14 +636,25 @@
                 return;
             }
             
-            // 验证是否是自己的房源（没有user_id的也可以删除）
             if (listing.user_id && listing.user_id !== user.id) {
                 alert('您只能删除自己发布的房源');
                 return;
             }
             
             if (confirm('确定删除此房源吗？')) {
-                let list = getListings();
+                // 从云端删除
+                try {
+                    await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?id=eq.' + id, {
+                        method: 'DELETE',
+                        headers: {
+                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                        }
+                    });
+                } catch (e) {}
+                
+                // 从本地删除
+                let list = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
                 list = list.filter(l => l.id !== id);
                 localStorage.setItem('yqh_listings', JSON.stringify(list));
                 showToast('删除成功');
@@ -611,7 +663,7 @@
         }
 
         // 删除我的求租
-        function deleteMyWanted(id) {
+        async function deleteMyWanted(id) {
             const session = localStorage.getItem('yqh_user');
             if (!session) {
                 alert('请先登录');
@@ -619,7 +671,7 @@
             }
             const user = JSON.parse(session);
             
-            const wanted = getWantedList();
+            const wanted = await getWantedList();
             const item = wanted.find(w => w.id === id);
             
             if (!item) {
@@ -627,16 +679,28 @@
                 return;
             }
             
-            // 验证是否是自己的求租（没有user_id的也可以删除）
             if (item.user_id && item.user_id !== user.id) {
                 alert('您只能删除自己发布的求租信息');
                 return;
             }
             
             if (confirm('确定删除此求租信息吗？')) {
-                let list = getWantedList();
+                // 从云端删除
+                try {
+                    await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?id=eq.' + id, {
+                        method: 'DELETE',
+                        headers: {
+                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                        }
+                    });
+                } catch (e) {}
+                
+                // 从本地删除
+                let list = JSON.parse(localStorage.getItem('yqh_rent_wanted') || '[]');
                 list = list.filter(w => w.id !== id);
                 localStorage.setItem('yqh_rent_wanted', JSON.stringify(list));
+                
                 showToast('删除成功');
                 renderMyWanted();
             }

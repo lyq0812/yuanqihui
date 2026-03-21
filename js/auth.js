@@ -38,12 +38,6 @@ function getSupabase() {
                                 },
                                 body: JSON.stringify(data)
                             }).then(r => {
-                                if (!r.ok) {
-                                    r.text().then(t => {
-                                        console.error('Insert error:', r.status, t);
-                                        alert('注册失败: ' + t);
-                                    });
-                                }
                                 return r.json();
                             }).then(data => resolve({data: data, error: null})).catch(err => {
                                 console.error('Insert catch:', err);
@@ -188,14 +182,8 @@ function doRegister() {
     currentUser = newUser;
     
     // 保存到云端
-    console.log('正在注册到云端:', newUser);
     getSupabase().from('users').insert([newUser]).then(function(result) {
         console.log('注册结果:', result);
-        if (result.error) {
-            alert('云端注册失败: ' + result.error);
-        } else {
-            alert('注册成功！');
-        }
     });
     
     updateNavForAuth();
