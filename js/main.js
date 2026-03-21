@@ -302,6 +302,7 @@ function initMobileMenu() {
 
 // 获取云端+本地房源
 async function getApprovedListings() {
+    console.log('正在获取云端房源...');
     try {
         var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=*', {
             headers: {
@@ -310,9 +311,13 @@ async function getApprovedListings() {
             }
         });
         
+        console.log('响应状态:', response.status);
         var dbListings = [];
         if (response.ok) {
             dbListings = await response.json();
+            console.log('云端房源数量:', dbListings.length);
+        } else {
+            console.error('获取失败，状态码:', response.status);
         }
         
         var localListings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
