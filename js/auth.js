@@ -104,7 +104,7 @@ function doLogin() {
     var password = document.getElementById('login-password').value;
     
     if (!username || !password) {
-        alert('请输入用户名和密�?);
+        alert('请输入用户名和密码');
         return;
     }
     
