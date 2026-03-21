@@ -500,6 +500,33 @@
             }, 1500);
         };
         
+        // 提交到云端
+        async function submitPropertyToDB(property) {
+            try {
+                var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify(property)
+                });
+                
+                if (response.ok) {
+                    console.log('房源已保存到云端');
+                    return true;
+                } else {
+                    console.error('保存失败:', response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error('保存异常:', error);
+                return false;
+            }
+        }
+        
         // 绑定提交按钮事件
         document.getElementById('submit-btn').addEventListener('click', function() {
             window.submitListingForm();
