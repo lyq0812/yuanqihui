@@ -45,6 +45,14 @@ function sanitizePhone(value) {
     return value.replace(/[^\d+\-\s()]/g, '');
 }
 
+// HTML转义函数
+function escapeHtml(value) {
+    if (!value) return '';
+    const div = document.createElement('div');
+    div.textContent = value;
+    return div.innerHTML;
+}
+
 // 初始化检查
 function initAuth() {
     const savedUser = localStorage.getItem('yqh_user');
@@ -115,7 +123,6 @@ async function doLogin() {
     
     // 检查云端
     try {
-        console.log('正在查询云端，用户名:', username);
         const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*', {
             headers: {
                 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
@@ -123,10 +130,10 @@ async function doLogin() {
             }
         });
         const cloudUsers = await response.json();
-        console.log('云端返回数据:', cloudUsers);
         
-        user = cloudUsers.find(u => u.username === username && u.password === password);
-        console.log('找到用户:', user);
+        if (Array.isArray(cloudUsers)) {
+            user = cloudUsers.find(u => u.username === username && u.password === password);
+        }
         
         if (user) {
             localStorage.setItem('yqh_user', JSON.stringify(user));
