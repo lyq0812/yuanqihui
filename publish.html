@@ -444,15 +444,20 @@
                     body: JSON.stringify(property)
                 });
                 
-                if (response.ok) {
+                var data = await response.json();
+                console.log('保存结果:', response.status, data);
+                
+                if (response.ok || response.status === 201) {
                     console.log('房源已保存到云端');
                     return true;
                 } else {
-                    console.error('保存失败:', response.status);
+                    console.error('保存失败:', response.status, data);
+                    alert('保存失败: ' + JSON.stringify(data));
                     return false;
                 }
             } catch (error) {
                 console.error('保存异常:', error);
+                alert('保存异常: ' + error.message);
                 return false;
             }
         };
