@@ -512,14 +512,6 @@
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
-        }
-        
-        function logout() {
-            if (confirm('确定要退出登录吗？')) {
-                localStorage.removeItem('yqh_user');
-                window.location.reload();
-            }
-        }
         
         document.addEventListener('DOMContentLoaded', function() {
             checkLogin();
