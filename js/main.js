@@ -4,6 +4,7 @@
    ======================================== */
 
 // currentUser 在 auth.js 中声明
+let currentUser = null;
 // Supabase 客户端（仅用于数据存储）
 let supabaseClient = null;
 
@@ -46,7 +47,15 @@ function sanitizePhone(value) {
 
 // 初始化检查
 function initAuth() {
-    // auth.js 会处理
+    const savedUser = localStorage.getItem('yqh_user');
+    if (savedUser) {
+        try {
+            currentUser = JSON.parse(savedUser);
+            updateNavForAuth();
+        } catch(e) {
+            console.log('解析用户数据失败', e);
+        }
+    }
 }
 
 // 显示登录弹窗
@@ -57,11 +66,25 @@ function showLoginModal() {
     }
 }
 
+function showAuthModal() {
+    showLoginModal();
+}
+
 function closeAuthModal() {
     const modal = document.getElementById('auth-modal');
     if (modal) {
         modal.style.display = 'none';
     }
+}
+
+function switchToLogin() {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('register-form').style.display = 'none';
+}
+
+function switchToRegister() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'block';
 }
 
 // 用户相关
@@ -92,7 +115,7 @@ async function doLogin() {
     
     // 检查云端
     try {
-        const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?username=eq.' + encodeURIComponent(username) + '&password=eq.' + encodeURIComponent(password), {
+        const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*', {
             headers: {
                 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
                 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
@@ -100,8 +123,9 @@ async function doLogin() {
         });
         const cloudUsers = await response.json();
         
-        if (cloudUsers && cloudUsers.length > 0) {
-            user = cloudUsers[0];
+        user = cloudUsers.find(u => u.username === username && u.password === password);
+        
+        if (user) {
             localStorage.setItem('yqh_user', JSON.stringify(user));
             currentUser = user;
             updateNavForAuth();
@@ -632,7 +656,7 @@ function showToast(message) {
 // 从云端获取已批准的房源
 async function getApprovedListingsFromDB() {
     try {
-        const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?status=eq.approved&select=*', {
+        const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=*', {
             headers: {
                 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
                 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
