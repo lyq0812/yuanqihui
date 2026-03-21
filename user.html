@@ -9,7 +9,14 @@
     <link rel="canonical" href="https://lyq0812.github.io/yuanqihui/user.html">
 </head>
 <body>
+    <!-- Header -->
     <header class="header">
+        <div class="header-top">
+            <div class="container">
+                <span style="color: white;"><i class="fas fa-map-marker-alt" style="color: white;"></i> 陕西厂房出租信息平台</span>
+                <span style="float: right; color: white;"><i class="fas fa-clock" style="color: white;"></i> 工作时间: 9:00-18:00</span>
+            </div>
+        </div>
         <div class="header-main">
             <div class="container">
                 <div class="header-content">
@@ -19,7 +26,7 @@
                         </div>
                         <div class="logo-text">
                             <h1>园企汇</h1>
-                            <span>陕西厂房仓库出租</span>
+                            <span>陕西厂房仓库出租网</span>
                         </div>
                     </a>
                     
@@ -28,7 +35,16 @@
                         <a href="listings.html"><i class="fas fa-building"></i> 房源信息</a>
                         <a href="rent-wanted-list.html"><i class="fas fa-search"></i> 求租信息</a>
                         <a href="publish.html"><i class="fas fa-plus-circle"></i> 发布房源</a>
+                        <a href="rent-wanted-publish.html"><i class="fas fa-handshake"></i> 发布求租</a>
+                        <a href="user.html" id="user-center-link"><i class="fas fa-user-circle"></i> <span id="user-name-display">用户中心</span></a>
+                        <a href="#" onclick="showLoginModal(); return false;" id="login-link"><i class="fas fa-sign-in-alt"></i> 登录/注册</a>
+                        <a href="#" onclick="logout(); return false;" style="color: #ef4444; display: none;" id="logout-link"><i class="fas fa-sign-out-alt"></i> 退出</a>
                     </nav>
+                    
+                    <a href="tel:13379308568" class="hotline-btn">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>13379308568</span>
+                    </a>
                     
                     <button class="mobile-menu-btn" id="mobile-menu-btn">
                         <i class="fas fa-bars"></i>
@@ -56,61 +72,61 @@
         </nav>
     </div>
 
-    <main class="main-content">
+    <main class="main-content" style="min-height: 60vh; padding: 2rem 0;">
         <div class="container">
-            <div class="user-center">
-                <div class="user-header">
-                    <h2><i class="fas fa-user-circle"></i> 用户中心</h2>
-                    <p id="user-welcome">登录后查看您的个人信息</p>
+            <div class="user-center" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+                <div class="user-header" style="text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                    <h2 style="font-size: 1.5rem; color: var(--gray-800); margin-bottom: 0.5rem;"><i class="fas fa-user-circle" style="color: var(--primary);"></i> 用户中心</h2>
+                    <p id="user-welcome" style="color: var(--gray-600);">登录后查看您的个人信息</p>
                 </div>
                 
                 <!-- 已登录用户 -->
                 <div id="user-info" style="display: none;">
-                    <div class="user-info-card">
-                        <div class="user-avatar">
+                    <div class="user-info-card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; margin-bottom: 2rem;">
+                        <div class="user-avatar" style="width: 64px; height: 64px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
                             <i class="fas fa-user"></i>
                         </div>
-                        <div class="user-details">
-                            <h3 id="user-name-display">用户名</h3>
-                            <p id="user-phone-display">手机号</p>
+                        <div class="user-details" style="flex: 1;">
+                            <h3 id="user-name-display" style="font-size: 1.25rem; margin-bottom: 0.25rem;">用户名</h3>
+                            <p id="user-phone-display" style="opacity: 0.9; font-size: 0.9rem;">手机号</p>
                         </div>
-                        <button class="btn-logout" id="logout-btn">
-                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        <button class="btn-logout" id="logout-btn" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border: none; border-radius: 6px; color: white; cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i> 退出
                         </button>
                     </div>
                     
-                    <div class="tabs">
-                        <button class="tab-btn active" data-tab="listings">
+                    <div class="tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #eee;">
+                        <button class="tab-btn active" data-tab="listings" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 0.95rem; color: var(--gray-600); border-bottom: 2px solid var(--primary); margin-bottom: -2px;">
                             <i class="fas fa-building"></i> 我的房源
                         </button>
-                        <button class="tab-btn" data-tab="wanted">
+                        <button class="tab-btn" data-tab="wanted" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 0.95rem; color: var(--gray-600);">
                             <i class="fas fa-search"></i> 我的求租
                         </button>
-                        <button class="tab-btn" data-tab="favorites">
+                        <button class="tab-btn" data-tab="favorites" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 0.95rem; color: var(--gray-600);">
                             <i class="fas fa-heart"></i> 收藏
                         </button>
                     </div>
                     
                     <div class="tab-content">
                         <div class="tab-pane active" id="listings-tab">
-                            <div class="section-header">
-                                <h3><i class="fas fa-building"></i> 我的房源</h3>
-                                <a href="publish.html" class="btn-call"><i class="fas fa-plus"></i> 发布新房源</a>
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                                <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-building" style="color: #667eea;"></i> 我的房源</h3>
+                                <a href="publish.html" class="btn-call" style="padding: 0.5rem 1rem; font-size: 0.9rem;"><i class="fas fa-plus"></i> 发布新房源</a>
                             </div>
                             <div id="my-listings"></div>
                         </div>
                         
                         <div class="tab-pane" id="wanted-tab">
-                            <div class="section-header">
-                                <h3><i class="fas fa-search"></i> 我的求租</h3>
-                                <a href="rent-wanted-publish.html" class="btn-call"><i class="fas fa-plus"></i> 发布求租</a>
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                                <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-search" style="color: #667eea;"></i> 我的求租</h3>
+                                <a href="rent-wanted-publish.html" class="btn-call" style="padding: 0.5rem 1rem; font-size: 0.9rem;"><i class="fas fa-plus"></i> 发布求租</a>
                             </div>
                             <div id="my-wanted"></div>
                         </div>
                         
                         <div class="tab-pane" id="favorites-tab">
-                            <div class="section-header">
-                                <h3><i class="fas fa-heart"></i> 我的收藏</h3>
+                            <div class="section-header" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                                <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-heart" style="color: #667eea;"></i> 我的收藏</h3>
                             </div>
                             <div id="my-favorites"></div>
                         </div>
@@ -118,10 +134,10 @@
                 </div>
                 
                 <!-- 未登录提示 -->
-                <div id="guest-info" class="auth-prompt">
-                    <i class="fas fa-user-circle"></i>
-                    <p>请先登录或注册账号</p>
-                    <button class="btn-call" onclick="showAuthModal()">
+                <div id="guest-info" class="auth-prompt" style="text-align: center; padding: 3rem 1rem;">
+                    <i class="fas fa-user-circle" style="font-size: 4rem; color: #ddd; margin-bottom: 1rem;"></i>
+                    <p style="font-size: 1.1rem; color: #666; margin-bottom: 1.5rem;">请先登录或注册账号</p>
+                    <button class="btn-call" onclick="showAuthModal()" style="display: inline-flex;">
                         <i class="fas fa-sign-in-alt"></i> 立即登录
                     </button>
                 </div>
@@ -131,54 +147,54 @@
 
     <!-- 登录/注册弹窗 -->
     <div class="modal-overlay" id="auth-modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeAuthModal()">
+        <div class="modal-content" style="max-width: 400px; padding: 2rem; border-radius: 12px;">
+            <button class="modal-close" onclick="closeAuthModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #999;">
                 <i class="fas fa-times"></i>
             </button>
             
             <!-- 登录表单 -->
             <div id="login-form">
-                <h3><i class="fas fa-sign-in-alt"></i> 登录</h3>
+                <h3 style="text-align: center; font-size: 1.5rem; margin-bottom: 1.5rem; color: #333;"><i class="fas fa-sign-in-alt" style="color: #667eea;"></i> 登录</h3>
                 <form onsubmit="event.preventDefault(); doLogin();">
                     <div class="form-group">
-                        <label>用户名/手机号</label>
-                        <input type="text" id="login-username" placeholder="请输入用户名或手机号" required>
+                        <label style="font-weight: 500; color: #555;">用户名/手机号</label>
+                        <input type="text" id="login-username" placeholder="请输入用户名或手机号" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 0.5rem;">
                     </div>
                     <div class="form-group">
-                        <label>密码</label>
-                        <input type="password" id="login-password" placeholder="请输入密码" required>
+                        <label style="font-weight: 500; color: #555;">密码</label>
+                        <input type="password" id="login-password" placeholder="请输入密码" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 0.5rem;">
                     </div>
-                    <button type="submit" class="btn-call" style="width: 100%;">登录</button>
+                    <button type="submit" class="btn-call" style="width: 100%; padding: 0.875rem; font-size: 1rem; margin-top: 1rem;">登 录</button>
                 </form>
-                <p class="switch-auth">
-                    还没有账号？<a href="#" onclick="switchToRegister()">立即注册</a>
+                <p class="switch-auth" style="text-align: center; margin-top: 1rem; color: #666;">
+                    还没有账号？<a href="#" onclick="switchToRegister(); return false;" style="color: #667eea;">立即注册</a>
                 </p>
             </div>
             
             <!-- 注册表单 -->
             <div id="register-form" style="display: none;">
-                <h3><i class="fas fa-user-plus"></i> 注册</h3>
+                <h3 style="text-align: center; font-size: 1.5rem; margin-bottom: 1.5rem; color: #333;"><i class="fas fa-user-plus" style="color: #667eea;"></i> 注册</h3>
                 <form onsubmit="event.preventDefault(); doRegister();">
                     <div class="form-group">
-                        <label>用户名</label>
-                        <input type="text" id="reg-username" placeholder="请设置用户名（4-20个字符）" required minlength="4" maxlength="20">
+                        <label style="font-weight: 500; color: #555;">用户名</label>
+                        <input type="text" id="reg-username" placeholder="请设置用户名（4-20个字符）" required minlength="4" maxlength="20" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 0.5rem;">
                     </div>
                     <div class="form-group">
-                        <label>手机号</label>
-                        <input type="tel" id="reg-phone" placeholder="请输入11位手机号码" required pattern="1[3-9]\d{9}">
+                        <label style="font-weight: 500; color: #555;">手机号</label>
+                        <input type="tel" id="reg-phone" placeholder="请输入11位手机号码" required pattern="1[3-9]\d{9}" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 0.5rem;">
                     </div>
                     <div class="form-group">
-                        <label>密码</label>
-                        <input type="password" id="reg-password" placeholder="请设置密码（至少6位）" required minlength="6">
+                        <label style="font-weight: 500; color: #555;">密码</label>
+                        <input type="password" id="reg-password" placeholder="请设置密码（至少6位）" required minlength="6" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 0.5rem;">
                     </div>
                     <div class="form-group">
-                        <label>确认密码</label>
-                        <input type="password" id="reg-confirm-password" placeholder="请再次输入密码" required>
+                        <label style="font-weight: 500; color: #555;">确认密码</label>
+                        <input type="password" id="reg-confirm-password" placeholder="请再次输入密码" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 0.5rem;">
                     </div>
-                    <button type="submit" class="btn-call" style="width: 100%;">注册</button>
+                    <button type="submit" class="btn-call" style="width: 100%; padding: 0.875rem; font-size: 1rem; margin-top: 1rem;">注 册</button>
                 </form>
-                <p class="switch-auth">
-                    已有账号？<a href="#" onclick="switchToLogin()">立即登录</a>
+                <p class="switch-auth" style="text-align: center; margin-top: 1rem; color: #666;">
+                    已有账号？<a href="#" onclick="switchToLogin(); return false;" style="color: #667eea;">立即登录</a>
                 </p>
             </div>
         </div>
@@ -347,14 +363,15 @@
             const container = document.getElementById('my-listings');
             
             container.innerHTML = listings.map(item => `
-                <div class="my-listings-card">
-                    <div class="my-listings-info">
-                        <h4><a href="detail.html?id=${item.id}" target="_blank" style="color: var(--gray-800);">${item.title}</a></h4>
-                        <p>${item.region} · ${item.area}㎡ · ¥${formatPrice(item.price)}/月 · ${formatDate(item.timestamp)}</p>
+                <div class="my-listings-card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #f9f9f9; border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid #eee;">
+                    <div class="my-listings-info" style="flex: 1;">
+                        <h4 style="margin-bottom: 0.5rem;"><a href="detail.html?id=${item.id}" target="_blank" style="color: #333; text-decoration: none;">${item.title}</a></h4>
+                        <p style="color: #666; font-size: 0.85rem; margin: 0;">${item.region} · ${item.area}㎡ · ¥${formatPrice(item.price)}/月</p>
+                        <p style="color: #999; font-size: 0.8rem; margin: 0.25rem 0 0 0;">${formatDate(item.timestamp)}</p>
                     </div>
-                    <div class="my-listings-actions">
-                        <span class="status-badge status-${item.status}">${item.status === 'approved' ? '已发布' : item.status === 'pending' ? '审核中' : '已拒绝'}</span>
-                        <button class="btn-delete" onclick="deleteMyListing('${item.id}')">
+                    <div class="my-listings-actions" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                        <span class="status-badge status-${item.status}" style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; background: ${item.status === 'approved' ? '#d4edda' : '#fff3cd'}; color: ${item.status === 'approved' ? '#155724' : '#856404'};">${item.status === 'approved' ? '已发布' : item.status === 'pending' ? '审核中' : '已拒绝'}</span>
+                        <button class="btn-delete" onclick="deleteMyListing('${item.id}')" style="padding: 0.375rem 0.75rem; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                             <i class="fas fa-trash"></i> 删除
                         </button>
                     </div>
@@ -382,14 +399,15 @@
             }
             
             container.innerHTML = wanted.map(item => `
-                <div class="my-listings-card">
-                    <div class="my-listings-info">
-                        <h4><a href="rent-wanted-detail.html?id=${item.id}" target="_blank" style="color: var(--gray-800);">${item.title}</a></h4>
-                        <p>${item.region} · ${item.area}㎡ · ¥${formatPrice(item.budget)}/月 · ${formatDate(item.timestamp)}</p>
+                <div class="my-listings-card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #f9f9f9; border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid #eee;">
+                    <div class="my-listings-info" style="flex: 1;">
+                        <h4 style="margin-bottom: 0.5rem;"><a href="rent-wanted-detail.html?id=${item.id}" target="_blank" style="color: #333; text-decoration: none;">${item.title}</a></h4>
+                        <p style="color: #666; font-size: 0.85rem; margin: 0;">${item.region} · ${item.area}㎡ · ¥${formatPrice(item.budget)}/月</p>
+                        <p style="color: #999; font-size: 0.8rem; margin: 0.25rem 0 0 0;">${formatDate(item.timestamp)}</p>
                     </div>
-                    <div class="my-listings-actions">
-                        <span class="status-badge status-${item.status}">${item.status === 'approved' ? '已发布' : item.status === 'pending' ? '审核中' : '已拒绝'}</span>
-                        <button class="btn-delete" onclick="deleteMyWanted('${item.id}')">
+                    <div class="my-listings-actions" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                        <span class="status-badge status-${item.status}" style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; background: ${item.status === 'approved' ? '#d4edda' : '#fff3cd'}; color: ${item.status === 'approved' ? '#155724' : '#856404'};">${item.status === 'approved' ? '已发布' : item.status === 'pending' ? '审核中' : '已拒绝'}</span>
+                        <button class="btn-delete" onclick="deleteMyWanted('${item.id}')" style="padding: 0.375rem 0.75rem; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                             <i class="fas fa-trash"></i> 删除
                         </button>
                     </div>
