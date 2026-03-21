@@ -1,11 +1,11 @@
 # Robots.txt for 园企汇 - 陕西厂房出租平台
-# https://yuanqihui.com
+# https://lyq0812.github.io/yuanqihui/
 
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://yuanqihui.com/sitemap.xml
+Sitemap: https://lyq0812.github.io/yuanqihui/sitemap.xml
 
 # 爬虫访问频率限制
 Crawl-delay: 1
