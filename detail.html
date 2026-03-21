@@ -274,13 +274,36 @@
                 return;
             }
             
-            document.getElementById('detail-title').textContent = listing.title;
-            document.getElementById('detail-price').innerHTML = '¥' + formatPrice(listing.price) + '<span>/月</span>';
-            document.getElementById('detail-area').textContent = listing.area + '㎡';
-            document.getElementById('detail-region').textContent = listing.region || '未知';
-            document.getElementById('detail-location').textContent = listing.location || '未知';
-            document.getElementById('detail-description').textContent = listing.description || '暂无详细描述';
-            document.getElementById('contact-name').textContent = listing.contact || '暂无';
+            // 设置标题
+            document.getElementById('detail-title').textContent = listing.title || '无标题';
+            
+            // 设置图片
+            var detailImage = document.getElementById('detail-image');
+            if (listing.images && listing.images.length > 0) {
+                detailImage.innerHTML = '<img src="' + listing.images[0] + '" alt="' + (listing.title || '') + '">';
+            } else {
+                detailImage.innerHTML = '<div class="no-image"><i class="fas fa-building"></i></div>';
+            }
+            
+            // 设置详细信息
+            document.getElementById('detail-info').innerHTML =
+                '<div class="info-item"><i class="fas fa-map-marker-alt"></i> ' + (listing.region || '未知') + '</div>' +
+                '<div class="info-item"><i class="fas fa-vector-square"></i> ' + (listing.area || '未知') + '㎡</div>' +
+                '<div class="info-item"><i class="fas fa-ruler-vertical"></i> ' + (listing.height || '未知') + '米</div>' +
+                '<div class="info-item"><i class="fas fa-building"></i> ' + (listing.type || '未知') + '</div>' +
+                '<div class="info-item"><i class="fas fa-fire"></i> ' + (listing.fire_rating || '未知') + '</div>' +
+                '<div class="info-item"><i class="fas fa-yen-sign"></i> ¥' + formatPrice(listing.price) + '/月</div>';
+            
+            // 设置标签
+            var tags = listing.tags || [];
+            document.getElementById('detail-tags').innerHTML = tags.map(function(tag) {
+                return '<span class="detail-tag">' + tag + '</span>';
+            }).join('');
+            
+            // 设置描述
+            document.getElementById('detail-description').innerHTML = '<h3>房源描述</h3><p>' + (listing.description || '暂无详细描述') + '</p>';
+            
+            // 设置联系方式
             document.getElementById('contact-phone').innerHTML = listing.contact ? '<a href="tel:' + listing.contact + '">' + listing.contact + '</a>' : '暂无';
         }
         
