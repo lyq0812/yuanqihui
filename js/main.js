@@ -401,10 +401,8 @@ async function submitPropertyToDB(property) {
             created_at: new Date().toISOString()
         };
 
-        // 让云端与本地使用同一个 id，避免详情页/去重时找不到数据或重复。
-        if (property && property.id) {
-            dbData.id = property.id;
-        }
+        // 让云端自动生成UUID作为id，不要使用本地ID格式
+        // 移除本地ID，确保Supabase使用UUID
         
         console.log('Property data:', dbData);
         const { data, error } = await supabase.from('properties').insert([dbData]).select();
@@ -441,10 +439,7 @@ async function submitRequestToDB(request) {
             created_at: new Date().toISOString()
         };
 
-        // 让云端与本地使用同一个 id，避免列表/详情重复或取不到。
-        if (request && request.id) {
-            dbData.id = request.id;
-        }
+        // 让云端自动生成UUID作为id，不要使用本地ID格式
         
         console.log('Request data:', dbData);
         const { data, error } = await supabase.from('requests').insert([dbData]).select();
