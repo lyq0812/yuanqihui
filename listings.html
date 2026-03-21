@@ -133,6 +133,9 @@
                 <button class="btn-call" style="padding: 0.625rem 1.5rem;" onclick="applyFilters()">
                     <i class="fas fa-search"></i> 筛选
                 </button>
+                <button class="btn-call" style="padding: 0.625rem 1.5rem; background: var(--success);" onclick="refreshListings()">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
             </div>
         </div>
     </section>
@@ -365,12 +368,28 @@
             if (eia === 'true') document.getElementById('filter-eia').checked = true;
         }
         
-        // 应用筛选
-        async function applyFilters() {
-            document.getElementById('debug-info').innerHTML = 'applyFilters 被调用，正在从云端获取数据...';
+        // 刷新房源列表
+        async function refreshListings() {
+            document.getElementById('debug-info').innerHTML = 'refreshListings 被调用，正在从云端获取数据...';
             
             // 从云端获取数据
             const allListings = await getApprovedListings();
+            document.getElementById('debug-info').innerHTML = 'refreshListings 房源数量: ' + allListings.length + ' - 准备排序';
+            
+            // 保存到本地存储
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LISTINGS, JSON.stringify(allListings));
+            document.getElementById('debug-info').innerHTML = 'refreshListings 数据已保存到本地存储，共 ' + allListings.length + ' 条';
+            
+            // 触发筛选应用
+            applyFilters();
+        }
+        
+        // 应用筛选
+        function applyFilters() {
+            document.getElementById('debug-info').innerHTML = 'applyFilters 被调用，正在从本地获取数据...';
+            
+            // 从本地存储获取数据
+            const allListings = localGetListings();
             document.getElementById('debug-info').innerHTML = 'applyFilters 房源数量: ' + allListings.length + ' - 准备排序';
             
             const region = document.getElementById('filter-region').value;
