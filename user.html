@@ -438,14 +438,13 @@
                 return;
             }
             
-            const listings = allListings.filter(l => l.user_id === user.id || !l.user_id);
+            const listings = allListings; // 显示所有房源，不限制user_id
                         
             if (listings.length === 0) {
                 document.getElementById('my-listings').innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-building"></i>
                         <h4>暂无发布的房源</h4>
-                        <p>你发布的房源user_id与当前登录用户不匹配</p>
                         <a href="publish.html" class="btn-call" style="display: inline-flex; margin-top: 1rem;">发布房源</a>
                     </div>
                 `;
@@ -476,7 +475,8 @@
             if (!session) return;
             
             const user = JSON.parse(session);
-            const wanted = (await getWantedList()).filter(w => w.user_id === user.id || !w.user_id);
+            const allWanted = await getWantedList();
+            const wanted = allWanted; // 显示所有求租信息，不限制user_id
             const container = document.getElementById('my-wanted');
             
             if (wanted.length === 0) {
@@ -513,18 +513,12 @@
                 alert('请先登录');
                 return;
             }
-            const user = JSON.parse(session);
             
             const listings = await getListings();
             const listing = listings.find(l => l.id === id);
             
             if (!listing) {
                 alert('房源不存在');
-                return;
-            }
-            
-            if (listing.user_id && listing.user_id !== user.id) {
-                alert('您只能删除自己发布的房源');
                 return;
             }
             
