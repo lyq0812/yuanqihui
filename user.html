@@ -246,6 +246,7 @@
                 if (user.password.length === 64) {
                     if (await verifyPassword(password, user.password)) {
                         localStorage.setItem('yqh_user', JSON.stringify(user));
+                        currentUser = user;
                         alert('登录成功');
                         closeAuthModal();
                         document.getElementById('user-info').style.display = 'block';
@@ -254,6 +255,8 @@
                         if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
                         var phoneDisplay = document.getElementById('user-phone-display');
                         if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                        renderMyListings();
+                        renderMyWanted();
                         return false;
                     }
                 } else if (user.password === password) {
@@ -261,6 +264,7 @@
                     user.password = hashed;
                     localStorage.setItem('yqh_users', JSON.stringify(users));
                     localStorage.setItem('yqh_user', JSON.stringify(user));
+                    currentUser = user;
                     alert('登录成功');
                     closeAuthModal();
                     document.getElementById('user-info').style.display = 'block';
@@ -269,6 +273,8 @@
                     if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
                     var phoneDisplay = document.getElementById('user-phone-display');
                     if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                    renderMyListings();
+                    renderMyWanted();
                     return false;
                 }
             }
@@ -350,6 +356,7 @@
             
             if (session) {
                 const user = JSON.parse(session);
+                currentUser = user;
                 userInfo.style.display = 'block';
                 guestInfo.style.display = 'none';
                 if (userNameDisplay) userNameDisplay.textContent = user.username || user.phone;
@@ -372,6 +379,7 @@
             
             if (session) {
                 const user = JSON.parse(session);
+                currentUser = user;
                 if (userNameDisplay) userNameDisplay.textContent = user.username || user.phone;
                 if (logoutLink) logoutLink.style.display = 'inline-flex';
                 if (loginLink) loginLink.style.display = 'none';
@@ -416,6 +424,7 @@
                 if (user.password.length === 64) {
                     if (await verifyPassword(password, user.password)) {
                         localStorage.setItem('yqh_user', JSON.stringify(user));
+                        currentUser = user;
                         alert('登录成功');
                         document.getElementById('user-info').style.display = 'block';
                         document.getElementById('guest-info').style.display = 'none';
@@ -423,6 +432,8 @@
                         if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
                         var phoneDisplay = document.getElementById('user-phone-display');
                         if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                        renderMyListings();
+                        renderMyWanted();
                         return;
                     }
                 } else if (user.password === password) {
@@ -430,6 +441,7 @@
                     user.password = hashed;
                     localStorage.setItem('yqh_users', JSON.stringify(users));
                     localStorage.setItem('yqh_user', JSON.stringify(user));
+                    currentUser = user;
                     alert('登录成功');
                     document.getElementById('user-info').style.display = 'block';
                     document.getElementById('guest-info').style.display = 'none';
@@ -437,6 +449,8 @@
                     if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
                     var phoneDisplay = document.getElementById('user-phone-display');
                     if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                    renderMyListings();
+                    renderMyWanted();
                     return;
                 }
             }
