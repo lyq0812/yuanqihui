@@ -182,7 +182,24 @@
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(name);
         }
-
+        
+        // 从云端获取求租数据
+        async function getApprovedWantedFromDB() {
+            try {
+                var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?select=*', {
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                    }
+                });
+                var data = await response.json();
+                return data || [];
+            } catch (err) {
+                console.log('获取云端求租失败:', err);
+                return [];
+            }
+        }
+        
         // 获取求租列表
         function getWantedList() {
             const data = localStorage.getItem('yqh_rent_wanted');
@@ -221,7 +238,7 @@
             if (!wanted) {
                 // 本地找不到时，尝试从云端拉取已审核通过的数据
                 try {
-                    const approvedRequests = await getApprovedRequests();
+                    const approvedRequests = await getApprovedWantedFromDB();
                     wanted = approvedRequests.find(item => item.id == id);
                 } catch (e) {
                     // 忽略，下面会统一渲染兜底
