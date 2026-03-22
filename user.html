@@ -625,7 +625,7 @@
             }
             
             const listings = allListings.filter(function(l) {
-                return l.user_id === currentUser.id || l.user_phone === currentUser.phone;
+                return l.user_id === user.id || l.user_phone === user.phone;
             });
                         
             if (listings.length === 0) {
@@ -665,7 +665,7 @@
             const user = JSON.parse(session);
             const allWanted = await getWantedList();
             const wanted = allWanted.filter(function(w) {
-                return w.user_id === currentUser.id || w.user_phone === currentUser.phone;
+                return w.user_id === user.id || w.user_phone === user.phone;
             });
             const container = document.getElementById('my-wanted');
             

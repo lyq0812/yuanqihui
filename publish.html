@@ -500,7 +500,9 @@
                 fire_rating: document.getElementById('listing-fire').value || '',
                 eia_available: document.getElementById('listing-eia').checked ? 'true' : 'false',
                 images: [],
-                status: 'approved'
+                status: 'approved',
+                user_id: currentUser.id,
+                user_phone: currentUser.phone || ''
             };
             
             listing.tags = [];
