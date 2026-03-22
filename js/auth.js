@@ -72,7 +72,7 @@
         document.getElementById('auth-title').textContent = '用户注册';
     };
     
-    window.handleLogin = function(e) {
+    window.handleLogin = async function(e) {
         e.preventDefault();
         var username = document.getElementById('login-username').value.trim();
         var password = document.getElementById('login-password').value;
@@ -82,59 +82,33 @@
             return false;
         }
         
-        // 先检查本地
         var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
-        var user = users.find(function(u) { return u.username === username && u.password === password; });
-        
-        if (!user) {
-            user = users.find(function(u) { return u.phone === username && u.password === password; });
-        }
+        var user = users.find(function(u) { return u.username === username || u.phone === username; });
         
         if (user) {
-            localStorage.setItem('yqh_user', JSON.stringify(user));
-            alert('登录成功');
-            window.location.reload();
-            return false;
-        }
-        
-        // 检查云端
-        fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*', {
-            headers: {
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-            }
-        })
-        .then(function(response) { return response.json(); })
-        .then(function(cloudUsers) {
-            if (Array.isArray(cloudUsers)) {
-                user = cloudUsers.find(function(u) { return u.phone === username && u.password === password; });
-                if (!user) {
-                    user = cloudUsers.find(function(u) { return u.username === username && u.password === password; });
+            if (user.password.length === 64) {
+                if (await verifyPassword(password, user.password)) {
+                    localStorage.setItem('yqh_user', JSON.stringify(user));
+                    alert('登录成功');
+                    window.location.reload();
+                    return false;
                 }
-            }
-            
-            if (user) {
-                users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
-                if (!users.find(function(u) { return u.username === user.username; })) {
-                    users.push(user);
-                    localStorage.setItem('yqh_users', JSON.stringify(users));
-                }
+            } else if (user.password === password) {
+                var hashed = await hashPassword(password);
+                user.password = hashed;
+                localStorage.setItem('yqh_users', JSON.stringify(users));
                 localStorage.setItem('yqh_user', JSON.stringify(user));
                 alert('登录成功');
                 window.location.reload();
-            } else {
-                alert('用户名或密码错误');
+                return false;
             }
-        })
-        .catch(function(error) {
-            console.error('登录失败', error);
-            alert('用户名或密码错误');
-        });
+        }
         
+        alert('用户名或密码错误');
         return false;
     };
     
-    window.handleRegister = function(e) {
+    window.handleRegister = async function(e) {
         e.preventDefault();
         var username = document.getElementById('reg-username').value.trim();
         var phone = document.getElementById('reg-phone').value.trim();
@@ -165,11 +139,13 @@
             return false;
         }
         
+        var hashedPassword = await hashPassword(password);
+        
         var newUser = {
             id: 'usr_' + Date.now(),
             username: username,
             phone: phone,
-            password: password,
+            password: hashedPassword,
             role: 'user',
             created_at: new Date().toISOString()
         };
@@ -178,7 +154,6 @@
         localStorage.setItem('yqh_users', JSON.stringify(users));
         localStorage.setItem('yqh_user', JSON.stringify(newUser));
         
-        // 保存到云端
         fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users', {
             method: 'POST',
             headers: {

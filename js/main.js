@@ -2,6 +2,20 @@
 
 var currentUser = null;
 
+// SHA-256 哈希函数（用于密码保护）
+async function hashPassword(password) {
+    var msgBytes = new TextEncoder().encode(password + 'yqh_salt_2024');
+    var hashBuffer = await crypto.subtle.digest('SHA-256', msgBytes);
+    var hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+// 验证密码
+async function verifyPassword(password, hash) {
+    var newHash = await hashPassword(password);
+    return newHash === hash;
+}
+
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
     initAuth();
@@ -73,7 +87,7 @@ function showLogin() {
 }
 
 // 处理登录
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     var username = document.getElementById('login-username').value.trim();
     var password = document.getElementById('login-password').value;
@@ -83,51 +97,25 @@ function handleLogin(e) {
         return false;
     }
     
-    // 先检查本地
     var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
-    var user = users.find(function(u) { return u.username === username && u.password === password; });
-    
-    if (!user) {
-        user = users.find(function(u) { return u.phone === username && u.password === password; });
-    }
+    var user = users.find(function(u) { return u.username === username || u.phone === username; });
     
     if (user) {
-        loginSuccess(user);
-        return false;
+        if (user.password.length === 64) {
+            if (await verifyPassword(password, user.password)) {
+                loginSuccess(user);
+                return false;
+            }
+        } else if (user.password === password) {
+            var hashed = await hashPassword(password);
+            user.password = hashed;
+            localStorage.setItem('yqh_users', JSON.stringify(users));
+            loginSuccess(user);
+            return false;
+        }
     }
     
-    // 检查云端
-    fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*', {
-        headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-        }
-    })
-    .then(function(response) { return response.json(); })
-    .then(function(cloudUsers) {
-        if (Array.isArray(cloudUsers)) {
-            user = cloudUsers.find(function(u) { return u.phone === username && u.password === password; });
-            if (!user) {
-                user = cloudUsers.find(function(u) { return u.username === username && u.password === password; });
-            }
-        }
-        
-        if (user) {
-            users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
-            if (!users.find(function(u) { return u.username === user.username; })) {
-                users.push(user);
-                localStorage.setItem('yqh_users', JSON.stringify(users));
-            }
-            loginSuccess(user);
-        } else {
-            alert('用户名或密码错误');
-        }
-    })
-    .catch(function(error) {
-        console.error('登录失败', error);
-        alert('用户名或密码错误');
-    });
-    
+    alert('用户名或密码错误');
     return false;
 }
 
@@ -177,7 +165,7 @@ function updateAllUserDisplays(user) {
 }
 
 // 处理注册
-function handleRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
     var username = document.getElementById('reg-username').value.trim();
     var phone = document.getElementById('reg-phone').value.trim();
@@ -208,11 +196,13 @@ function handleRegister(e) {
         return false;
     }
     
+    var hashedPassword = await hashPassword(password);
+    
     var newUser = {
         id: 'usr_' + Date.now(),
         username: username,
         phone: phone,
-        password: password,
+        password: hashedPassword,
         role: 'user',
         created_at: new Date().toISOString()
     };
@@ -221,7 +211,6 @@ function handleRegister(e) {
     localStorage.setItem('yqh_users', JSON.stringify(users));
     localStorage.setItem('yqh_user', JSON.stringify(newUser));
     
-    // 保存到云端
     fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users', {
         method: 'POST',
         headers: {
@@ -387,6 +376,16 @@ function escapeHtml(value) {
     return div.innerHTML;
 }
 
+// 手机号脱敏
+function sanitizePhone(phone) {
+    if (!phone) return '';
+    phone = String(phone);
+    if (phone.length >= 11) {
+        return phone.substring(0, 3) + '****' + phone.substring(7);
+    }
+    return phone;
+}
+
 // 获取URL参数
 function getUrlParam(name) {
     var url = new URL(window.location.href);
@@ -430,6 +429,59 @@ async function submitRentWantedRequest(request) {
     } catch (error) {
         console.error('保存异常:', error);
         return false;
+    }
+}
+
+// 收藏相关函数
+function getFavorites() {
+    var data = localStorage.getItem('yqh_favorites');
+    return data ? JSON.parse(data) : [];
+}
+
+function saveFavorites(favorites) {
+    localStorage.setItem('yqh_favorites', JSON.stringify(favorites));
+}
+
+function isFavorite(listingId) {
+    var favorites = getFavorites();
+    return favorites.some(function(f) { return f.id === listingId; });
+}
+
+function addToFavorites(listing) {
+    if (isFavorite(listing.id)) return false;
+    var favorites = getFavorites();
+    favorites.unshift(listing);
+    saveFavorites(favorites);
+    return true;
+}
+
+function removeFromFavorites(listingId) {
+    var favorites = getFavorites();
+    favorites = favorites.filter(function(f) { return f.id !== listingId; });
+    saveFavorites(favorites);
+}
+
+function toggleFavorite(listingId) {
+    if (!currentUser) {
+        alert('请先登录');
+        showLoginModal();
+        return;
+    }
+    
+    var listings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+    var listing = listings.find(function(l) { return l.id === listingId; });
+    
+    if (!listing) {
+        console.error('房源不存在');
+        return;
+    }
+    
+    if (isFavorite(listingId)) {
+        removeFromFavorites(listingId);
+        alert('已取消收藏');
+    } else {
+        addToFavorites(listing);
+        alert('已添加收藏');
     }
 }
 

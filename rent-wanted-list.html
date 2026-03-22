@@ -87,6 +87,7 @@
             margin-bottom: 1rem;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -521,18 +522,22 @@
 
         // 应用筛选
         async function applyFilters() {
-            const region = document.getElementById('filter-region').value;
-            const area = document.getElementById('filter-area').value;
-            const budget = document.getElementById('filter-budget').value;
-            const type = document.getElementById('filter-type').value;
+            var region = document.getElementById('filter-region').value;
+            var area = document.getElementById('filter-area').value;
+            var budget = document.getElementById('filter-budget').value;
+            var type = document.getElementById('filter-type').value;
             
-            let url = '?';
-            if (region) url += `region=${region}&`;
-            if (area) url += `area=${area}&`;
-            if (budget) url += `budget=${budget}&`;
-            if (type) url += `type=${type}&`;
+            var url = new URL(window.location.href);
+            if (region) url.searchParams.set('region', region);
+            else url.searchParams.delete('region');
+            if (area) url.searchParams.set('area', area);
+            else url.searchParams.delete('area');
+            if (budget) url.searchParams.set('budget', budget);
+            else url.searchParams.delete('budget');
+            if (type) url.searchParams.set('type', type);
+            else url.searchParams.delete('type');
             
-            // 直接渲染，不跳转
+            window.history.pushState({}, '', url);
             await renderList();
         }
 

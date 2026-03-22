@@ -470,10 +470,27 @@
                 return;
             }
             
+            var title = document.getElementById('listing-title').value.trim();
+            var region = document.getElementById('listing-region').value;
+            var area = document.getElementById('listing-area').value;
+            
+            if (!title) {
+                alert('请填写房源标题');
+                return;
+            }
+            if (!region) {
+                alert('请选择所在地区');
+                return;
+            }
+            if (!area) {
+                alert('请填写厂房面积');
+                return;
+            }
+            
             var listing = {
-                title: document.getElementById('listing-title').value || '未命名',
-                region: document.getElementById('listing-region').value || '',
-                area: String(document.getElementById('listing-area').value || '0'),
+                title: title,
+                region: region,
+                area: String(area),
                 height: String(document.getElementById('listing-height').value || '6'),
                 price: String(document.getElementById('listing-price').value || '0'),
                 type: document.getElementById('listing-type').value || '',

@@ -301,16 +301,38 @@
                 return;
             }
             
+            var title = document.getElementById('rw-title').value.trim();
+            var region = document.getElementById('rw-region').value;
+            var area = document.getElementById('rw-area').value;
+            var type = document.getElementById('rw-type').value;
+            
+            if (!title) {
+                alert('请填写求租标题');
+                return;
+            }
+            if (!region) {
+                alert('请选择所在地区');
+                return;
+            }
+            if (!area) {
+                alert('请填写需求面积');
+                return;
+            }
+            if (!type) {
+                alert('请选择厂房类型');
+                return;
+            }
+            
             const request = {
                 created_at: new Date().toISOString(),
-                title: document.getElementById('rw-title').value,
-                region: document.getElementById('rw-region').value,
-                area: parseInt(document.getElementById('rw-area').value) || 0,
+                title: title,
+                region: region,
+                area: parseInt(area) || 0,
                 budget: parseInt(document.getElementById('rw-budget').value) || 0,
-                type: document.getElementById('rw-type').value,
-                description: document.getElementById('rw-description').value,
-                name: document.getElementById('rw-name').value,
-                contact: document.getElementById('rw-contact').value,
+                type: type,
+                description: document.getElementById('rw-description').value || '',
+                name: currentUser.username || '',
+                contact: currentUser.phone || '',
                 status: 'approved',
                 user_id: currentUser.id,
                 user_phone: currentUser.phone || currentUser.username
