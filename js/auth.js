@@ -8,6 +8,19 @@
         init();
     }
     
+    // 暴露 hashPassword 和 verifyPassword 到全局
+    window.hashPassword = async function(password) {
+        var msgBytes = new TextEncoder().encode(password + 'yqh_salt_2024');
+        var hashBuffer = await crypto.subtle.digest('SHA-256', msgBytes);
+        var hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    };
+    
+    window.verifyPassword = async function(password, hash) {
+        var newHash = await hashPassword(password);
+        return newHash === hash;
+    };
+    
     function init() {
         console.log('初始化登录系统...');
         createAuthModal();

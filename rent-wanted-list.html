@@ -643,7 +643,18 @@
         // 页面初始化
         function initListingPage() {
             initFilters();
-            renderList();
+            // 先显示本地缓存
+            var cached = localStorage.getItem('yqh_rent_wanted');
+            if (cached) {
+                renderList();
+            }
+            // 再异步获取云端
+            getApprovedWantedFromDB().then(function(data) {
+                if (data && data.length > 0) {
+                    localStorage.setItem('yqh_rent_wanted', JSON.stringify(data));
+                    renderList();
+                }
+            }).catch(function(e) {});
         }
         
         // 初始化
