@@ -3,11 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>用户中心 - 园企汇</title>
+    <title>用户中心 - 园企汇陕西厂房出租网</title>
+    <meta name="description" content="园企汇用户中心，管理发布的厂房房源和求租信息。">
+    <meta name="keywords" content="用户中心,厂房管理,我的发布">
+    <meta name="author" content="园企汇">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://lyq0812.github.io/yuanqihui/user.html">
+    <meta property="og:title" content="用户中心 - 园企汇">
+    <meta property="og:description" content="园企汇用户中心，管理发布的厂房房源和求租信息。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lyq0812.github.io/yuanqihui/user.html">
+    <meta property="og:locale" content="zh_CN">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="canonical" href="https://lyq0812.github.io/yuanqihui/user.html">
 </head>
 <body>
     <!-- Header -->
@@ -244,20 +253,24 @@
             
             if (user) {
                 if (user.password.length === 64) {
-                    if (await verifyPassword(password, user.password)) {
-                        localStorage.setItem('yqh_user', JSON.stringify(user));
-                        currentUser = user;
-                        alert('登录成功');
-                        closeAuthModal();
-                        document.getElementById('user-info').style.display = 'block';
-                        document.getElementById('guest-info').style.display = 'none';
-                        var nameDisplay = document.getElementById('user-name-display');
-                        if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
-                        var phoneDisplay = document.getElementById('user-phone-display');
-                        if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
-                        renderMyListings();
-                        renderMyWanted();
-                        return false;
+                    try {
+                        if (await verifyPassword(password, user.password)) {
+                            localStorage.setItem('yqh_user', JSON.stringify(user));
+                            currentUser = user;
+                            alert('登录成功');
+                            closeAuthModal();
+                            document.getElementById('user-info').style.display = 'block';
+                            document.getElementById('guest-info').style.display = 'none';
+                            var nameDisplay = document.getElementById('user-name-display');
+                            if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                            var phoneDisplay = document.getElementById('user-phone-display');
+                            if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                            renderMyListings();
+                            renderMyWanted();
+                            return false;
+                        }
+                    } catch (e) {
+                        console.error('密码验证异常', e);
                     }
                 } else if (user.password === password) {
                     var hashed = await hashPassword(password);
@@ -422,19 +435,23 @@
             
             if (user) {
                 if (user.password.length === 64) {
-                    if (await verifyPassword(password, user.password)) {
-                        localStorage.setItem('yqh_user', JSON.stringify(user));
-                        currentUser = user;
-                        alert('登录成功');
-                        document.getElementById('user-info').style.display = 'block';
-                        document.getElementById('guest-info').style.display = 'none';
-                        var nameDisplay = document.getElementById('user-name-display');
-                        if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
-                        var phoneDisplay = document.getElementById('user-phone-display');
-                        if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
-                        renderMyListings();
-                        renderMyWanted();
-                        return;
+                    try {
+                        if (await verifyPassword(password, user.password)) {
+                            localStorage.setItem('yqh_user', JSON.stringify(user));
+                            currentUser = user;
+                            alert('登录成功');
+                            document.getElementById('user-info').style.display = 'block';
+                            document.getElementById('guest-info').style.display = 'none';
+                            var nameDisplay = document.getElementById('user-name-display');
+                            if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                            var phoneDisplay = document.getElementById('user-phone-display');
+                            if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                            renderMyListings();
+                            renderMyWanted();
+                            return;
+                        }
+                    } catch (e) {
+                        console.error('密码验证异常', e);
                     }
                 } else if (user.password === password) {
                     var hashed = await hashPassword(password);

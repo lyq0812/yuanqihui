@@ -102,9 +102,13 @@ async function handleLogin(e) {
     
     if (user) {
         if (user.password.length === 64) {
-            if (await verifyPassword(password, user.password)) {
-                loginSuccess(user);
-                return false;
+            try {
+                if (await verifyPassword(password, user.password)) {
+                    loginSuccess(user);
+                    return false;
+                }
+            } catch (e) {
+                console.error('密码验证异常', e);
             }
         } else if (user.password === password) {
             var hashed = await hashPassword(password);

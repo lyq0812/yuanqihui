@@ -100,11 +100,15 @@
         
         if (user) {
             if (user.password.length === 64) {
-                if (await verifyPassword(password, user.password)) {
-                    localStorage.setItem('yqh_user', JSON.stringify(user));
-                    alert('登录成功');
-                    window.location.reload();
-                    return false;
+                try {
+                    if (await verifyPassword(password, user.password)) {
+                        localStorage.setItem('yqh_user', JSON.stringify(user));
+                        alert('登录成功');
+                        window.location.reload();
+                        return false;
+                    }
+                } catch (e) {
+                    console.error('密码验证异常', e);
                 }
             } else if (user.password === password) {
                 var hashed = await hashPassword(password);
