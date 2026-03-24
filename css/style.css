@@ -2430,13 +2430,25 @@ table td {
     .floating-contact {
         display: block;
     }
-    
+
     .hotline-btn span {
         display: none;
     }
-    
+
     .hotline-btn {
+        padding: 0.75rem 1.25rem;
+    }
+
+    .search-form button,
+    .btn-call,
+    .btn-submit {
+        min-height: 48px;
+        font-size: 1rem;
+    }
+
+    .region-tab {
         padding: 0.625rem 1rem;
+        font-size: 0.9375rem;
     }
 }
 
@@ -2618,6 +2630,42 @@ table td {
     }
     .nav-menu a i {
         font-size: 0.75rem;
+    }
+}
+
+/* 服务优势区块响应式 */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+@media (max-width: 992px) {
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* FAQ区块响应式 */
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .faq-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }
 

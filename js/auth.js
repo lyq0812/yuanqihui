@@ -121,6 +121,48 @@
             }
         }
         
+        try {
+            var cloudResponse = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(username) + ')', {
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                }
+            });
+            
+            if (cloudResponse.ok) {
+                var cloudUsers = await cloudResponse.json();
+                if (cloudUsers && cloudUsers.length > 0) {
+                    var cloudUser = cloudUsers[0];
+                    if (cloudUser.password && cloudUser.password.length === 64) {
+                        if (await verifyPassword(password, cloudUser.password)) {
+                            users.push(cloudUser);
+                            localStorage.setItem('yqh_users', JSON.stringify(users));
+                            localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                            alert('登录成功');
+                            window.location.reload();
+                            return false;
+                        }
+                    } else if (cloudUser.password === password) {
+                        var hashed = await hashPassword(password);
+                        cloudUser.password = hashed;
+                        var existingIndex = users.findIndex(function(u) { return u.id === cloudUser.id; });
+                        if (existingIndex >= 0) {
+                            users[existingIndex] = cloudUser;
+                        } else {
+                            users.push(cloudUser);
+                        }
+                        localStorage.setItem('yqh_users', JSON.stringify(users));
+                        localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                        alert('登录成功');
+                        window.location.reload();
+                        return false;
+                    }
+                }
+            }
+        } catch (cloudError) {
+            console.error('云端验证失败', cloudError);
+        }
+        
         alert('用户名或密码错误');
         return false;
     };
