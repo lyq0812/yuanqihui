@@ -309,6 +309,19 @@ function initMobileMenu() {
     var mobileNavOverlay = document.getElementById('mobile-nav-overlay');
     var mobileNavClose = document.getElementById('mobile-nav-close');
     
+    // 移动端固定顶部栏
+    if (window.innerWidth <= 768) {
+        document.body.classList.add('mobile-header-fixed');
+    }
+    
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 768) {
+            document.body.classList.add('mobile-header-fixed');
+        } else {
+            document.body.classList.remove('mobile-header-fixed');
+        }
+    });
+    
     if (mobileMenuBtn && mobileNav) {
         mobileMenuBtn.addEventListener('click', function() {
             mobileNav.style.left = '0';
