@@ -27,8 +27,25 @@
     <header class="header">
         <div class="header-top">
             <div class="container">
-                <span style="color: white;"><i class="fas fa-map-marker-alt" style="color: white;"></i> 陕西厂房出租信息平台</span>
-                <span style="float: right; color: white;"><i class="fas fa-clock" style="color: white;"></i> 工作时间: 9:00-18:00</span>
+                <!-- Desktop: 显示平台名称和工作时间 -->
+                <span class="desktop-only" style="color: white;"><i class="fas fa-map-marker-alt" style="color: white;"></i> 陕西厂房出租信息平台</span>
+                <span class="desktop-only" style="float: right; color: white;"><i class="fas fa-clock" style="color: white;"></i> 工作时间: 9:00-18:00</span>
+                
+                <!-- Mobile: 显示logo、名称、域名和汉堡按钮 -->
+                <div class="mobile-header-content">
+                    <div class="mobile-header-brand">
+                        <div class="logo-icon">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <div class="mobile-header-text">
+                            <span class="mobile-header-title">园企汇</span>
+                            <span class="mobile-header-domain">www.yuanqihui.icu</span>
+                        </div>
+                    </div>
+                    <button class="mobile-menu-btn" id="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
             </div>
         </div>
         <div class="header-main">
@@ -43,17 +60,6 @@
                             <span>陕西厂房仓库出租网</span>
                         </div>
                     </a>
-                    
-                    <!-- Mobile Header Brand -->
-                    <div class="mobile-header-brand">
-                        <div class="logo-icon">
-                            <i class="fas fa-industry"></i>
-                        </div>
-                        <div class="mobile-header-text">
-                            <span class="mobile-header-title">园企汇</span>
-                            <span class="mobile-header-domain">www.yuanqihui.icu</span>
-                        </div>
-                    </div>
                     
                     <nav class="nav-menu">
                         <a href="index.html" class="active"><i class="fas fa-home"></i> 首页</a>
@@ -71,10 +77,6 @@
                         <i class="fas fa-phone-alt"></i>
                         <span>13379308568</span>
                     </a>
-                    
-                    <button class="mobile-menu-btn" id="mobile-menu-btn">
-                        <i class="fas fa-bars"></i>
-                    </button>
                 </div>
             </div>
         </div>

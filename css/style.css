@@ -3,6 +3,18 @@
    美化升级版样式文件
    ======================================== */
 
+/* ====== 0. Reset Styles ====== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
 /* ====== 1. CSS Variables ====== */
 :root {
     /* Primary Colors - Deep Industrial Blue */
@@ -185,9 +197,35 @@ a:hover {
     transition: var(--transition);
 }
 
-.header.scrolled .header-main,
-body.mobile-header-fixed .header-main {
-    padding: 0.75rem 0;
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+
+    .header {
+        position: relative;
+    }
+
+    .header-top {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1001;
+        padding: 0.75rem 1rem;
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 50px;
+    }
+
+    .header-main {
+        display: none;
+    }
+
+    body {
+        padding-top: 60px;
+    }
 }
 
 .header-content {
@@ -2367,38 +2405,60 @@ table td {
 }
 
 @media (max-width: 768px) {
+    html, body {
+        margin: 0;
+        padding: 0;
+    }
+
     html {
         font-size: 14px;
     }
 
     .header {
         position: relative;
+        margin: 0;
+        padding: 0;
     }
 
     .header-top {
-        display: none;
-    }
-
-    .header-main {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
         z-index: 1001;
-        padding: 0.75rem 1rem;
+        padding: 0;
+        margin: 0;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     }
 
-    .header-main .container {
-        max-width: 100%;
-        padding: 0;
+    .header-top .container {
+        padding: 0.75rem 1rem;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 50px;
+    }
+
+    .header-top .desktop-only {
+        display: none;
+    }
+
+    .mobile-header-content {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-main {
+        display: none;
     }
 
     .header-content {
         justify-content: space-between;
         align-items: center;
-        min-height: auto;
+        width: 100%;
     }
 
     .mobile-header-brand {
@@ -2459,8 +2519,8 @@ table td {
         display: flex !important;
         background: rgba(255,255,255,0.2);
         color: white;
-        margin-left: 0;
         flex-shrink: 0;
+        position: static;
     }
 
     .mobile-menu-btn:active {
@@ -2478,62 +2538,62 @@ table td {
     .hero h2 {
         font-size: 2rem;
     }
-    
+
     .search-form {
         grid-template-columns: 1fr;
     }
-    
+
     .stats {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .listings-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .filter-bar {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .region-tabs {
         overflow-x: auto;
         flex-wrap: nowrap;
         padding-bottom: 0.5rem;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .detail-info {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .detail-image img {
         height: 300px;
     }
-    
+
     .admin-header {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .table-header {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .floating-contact {
         display: block;
     }
