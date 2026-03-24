@@ -116,47 +116,108 @@
         }
 
         // 登录
-        function doLogin() {
+        async function doLogin() {
             const username = document.getElementById('login-username').value.trim();
             const password = document.getElementById('login-password').value;
             const btn = document.getElementById('login-btn');
-            
+
             if (!username || !password) {
                 showError('请输入用户名和密码');
                 return;
             }
-            
+
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
 
             try {
                 // 从本地存储查询用户
                 let users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
-                
+
                 const user = users.find(u => (u.username === username || u.phone === username));
 
-                if (!user) {
-                    showError('用户名或密码错误');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
-                    return;
-                }
-                
-                // 验证密码
-                if (user.password !== password) {
-                    showError('用户名或密码错误');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
-                    return;
+                if (user) {
+                    // 本地验证密码
+                    if (user.password.length === 64) {
+                        // SHA-256 哈希验证
+                        const msgBytes = new TextEncoder().encode(password + 'yqh_salt_2024');
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBytes);
+                        const hashArray = Array.from(new Uint8Array(hashBuffer));
+                        const hashedPwd = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                        if (hashedPwd === user.password) {
+                            localStorage.setItem('yqh_user', JSON.stringify(user));
+                            showToast('登录成功！正在跳转...');
+                            setTimeout(() => {
+                                window.location.href = user.role === 'admin' ? 'admin.html' : 'index.html';
+                            }, 1000);
+                            return;
+                        }
+                    } else if (user.password === password) {
+                        // 明文密码，升级为哈希
+                        const msgBytes = new TextEncoder().encode(password + 'yqh_salt_2024');
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBytes);
+                        const hashArray = Array.from(new Uint8Array(hashBuffer));
+                        user.password = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                        localStorage.setItem('yqh_users', JSON.stringify(users));
+                        localStorage.setItem('yqh_user', JSON.stringify(user));
+                        showToast('登录成功！正在跳转...');
+                        setTimeout(() => {
+                            window.location.href = user.role === 'admin' ? 'admin.html' : 'index.html';
+                        }, 1000);
+                        return;
+                    }
                 }
 
-                // 保存登录状态
-                localStorage.setItem('yqh_user', JSON.stringify(user));
-                showToast('登录成功！正在跳转...');
-                
-                setTimeout(() => {
-                    window.location.href = user.role === 'admin' ? 'admin.html' : 'index.html';
-                }, 1000);
+                // 本地验证失败，尝试云端验证
+                try {
+                    const cloudResponse = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(username) + ')', {
+                        headers: {
+                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                        }
+                    });
+
+                    if (cloudResponse.ok) {
+                        const cloudUsers = await cloudResponse.json();
+                        if (cloudUsers && cloudUsers.length > 0) {
+                            const cloudUser = cloudUsers[0];
+                            if (cloudUser.password && cloudUser.password.length === 64) {
+                                const msgBytes = new TextEncoder().encode(password + 'yqh_salt_2024');
+                                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBytes);
+                                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                                const hashedPwd = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                                if (hashedPwd === cloudUser.password) {
+                                    users.push(cloudUser);
+                                    localStorage.setItem('yqh_users', JSON.stringify(users));
+                                    localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                                    showToast('登录成功！正在跳转...');
+                                    setTimeout(() => {
+                                        window.location.href = cloudUser.role === 'admin' ? 'admin.html' : 'index.html';
+                                    }, 1000);
+                                    return;
+                                }
+                            } else if (cloudUser.password === password) {
+                                const msgBytes = new TextEncoder().encode(password + 'yqh_salt_2024');
+                                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBytes);
+                                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                                cloudUser.password = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                                users.push(cloudUser);
+                                localStorage.setItem('yqh_users', JSON.stringify(users));
+                                localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                                showToast('登录成功！正在跳转...');
+                                setTimeout(() => {
+                                    window.location.href = cloudUser.role === 'admin' ? 'admin.html' : 'index.html';
+                                }, 1000);
+                                return;
+                            }
+                        }
+                    }
+                } catch (cloudErr) {
+                    console.error('云端验证失败:', cloudErr);
+                }
+
+                showError('用户名或密码错误');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
 
             } catch (err) {
                 console.error('登录错误:', err);

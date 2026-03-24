@@ -148,7 +148,7 @@
             try {
                 // 使用本地存储检查用户是否已存在
                 let users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
-                
+
                 // 检查用户名和手机号是否已存在
                 const existingUser = users.find(u => u.username === username || u.phone === phone);
                 if (existingUser) {
@@ -158,19 +158,62 @@
                     return;
                 }
 
+                // 同时检查云端是否已存在
+                try {
+                    const cloudResponse = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(phone) + ')', {
+                        headers: {
+                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                        }
+                    });
+                    if (cloudResponse.ok) {
+                        const cloudUsers = await cloudResponse.json();
+                        if (cloudUsers && cloudUsers.length > 0) {
+                            showError('用户名或手机号已被注册');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-user-plus"></i> 立即注册';
+                            return;
+                        }
+                    }
+                } catch (cloudErr) {
+                    console.error('云端检查失败:', cloudErr);
+                }
+
+                // SHA-256 哈希密码
+                const msgBytes = new TextEncoder().encode(password + 'yqh_salt_2024');
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBytes);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashedPassword = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
                 // 创建新用户
-                const newUser = { 
-                    id: Date.now(),
-                    username: username, 
-                    phone: phone, 
-                    password: password,
+                const newUser = {
+                    id: 'usr_' + Date.now(),
+                    username: username,
+                    phone: phone,
+                    password: hashedPassword,
                     role: 'user',
                     created_at: new Date().toISOString()
                 };
-                
+
                 // 保存到本地存储
                 users.push(newUser);
                 localStorage.setItem('yqh_users', JSON.stringify(users));
+
+                // 保存到云端
+                try {
+                    await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users', {
+                        method: 'POST',
+                        headers: {
+                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=representation'
+                        },
+                        body: JSON.stringify(newUser)
+                    });
+                } catch (cloudErr) {
+                    console.error('云端保存失败:', cloudErr);
+                }
 
                 // 自动登录
                 localStorage.setItem('yqh_user', JSON.stringify(newUser));
