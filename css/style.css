@@ -197,7 +197,21 @@ a:hover {
     transition: var(--transition);
 }
 
+.mobile-header-left,
+.mobile-menu-btn {
+    display: none;
+}
+
 @media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-header-left,
+    .mobile-menu-btn {
+        display: flex !important;
+    }
+
     html {
         font-size: 14px;
     }
@@ -1662,20 +1676,16 @@ a:hover {
         min-height: 54px;
     }
 
-    .mobile-header-content {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .mobile-header-brand {
+    .mobile-header-left {
         display: flex;
         align-items: center;
+        justify-content: flex-start;
+        flex: 1;
         gap: 0.5rem;
+        padding-right: 4rem;
     }
 
-    .logo-icon {
+    .mobile-logo-icon {
         width: 32px;
         height: 32px;
         background: linear-gradient(135deg, #ff6b35, #f7c948);
@@ -1684,33 +1694,53 @@ a:hover {
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1rem;
+        font-size: 0.9rem;
+        flex-shrink: 0;
     }
 
     .mobile-header-text {
         display: flex;
         flex-direction: column;
+        gap: 0.1rem;
     }
 
-    .mobile-header-title {
-        font-size: 1rem;
-        font-weight: 700;
+    .mobile-platform-name {
+        font-size: 0.85rem;
+        font-weight: 600;
         color: white;
-        line-height: 1.2;
     }
 
-    .mobile-header-domain {
+    .mobile-hotline {
         font-size: 0.65rem;
-        color: rgba(255,255,255,0.75);
+        color: rgba(255,255,255,0.85);
+    }
+
+    .mobile-hotline i {
+        margin-right: 0.25rem;
     }
 
     .mobile-menu-btn {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
         display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
         background: rgba(255,255,255,0.2);
         border-radius: 8px;
-        width: 38px;
-        height: 38px;
-        margin-left: auto;
+        padding: 0 0.75rem;
+        height: 36px;
+        color: white;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+    }
+
+    .mobile-menu-btn i {
+        font-size: 1rem;
     }
 
     .header-main {
@@ -1718,86 +1748,54 @@ a:hover {
     }
 
     .hero {
-        padding: 1rem 1rem 1.5rem;
+        padding: 1rem 1rem 0;
         margin-top: 0;
     }
 
     .hero-content {
-        text-align: left;
+        display: none;
     }
 
     .hero h2 {
-        font-size: 1.35rem;
-        text-align: left;
-        margin-bottom: 0.25rem;
+        display: none;
     }
 
     .hero p {
-        font-size: 0.8rem;
-        text-align: left;
-        margin-bottom: 0;
-        opacity: 0.9;
+        display: none;
     }
 
     .search-box {
-        margin: 0 -1rem;
-        border-radius: 0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        padding: 0.875rem;
-    }
-
-    .search-form {
-        display: flex;
-        flex-direction: column;
-        gap: 0.625rem;
-        background: transparent;
-        padding: 0;
-        box-shadow: none;
-    }
-
-    .search-form select,
-    .search-form input {
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
-        border-radius: 10px;
-        border: 1.5px solid #e8e9eb;
-        background: white;
-    }
-
-    .search-form button {
-        padding: 0.875rem;
-        font-size: 0.95rem;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #ff6b35, #f7c948);
-        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.35);
+        display: none;
     }
 
     .stats {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 0.5rem;
-        margin-top: 1rem;
-        padding: 0;
-    }
-
-    .stat-item {
-        padding: 0.625rem 0.25rem;
-        background: rgba(255,255,255,0.15);
-        border-radius: 8px;
-    }
-
-    .stat-item h3 {
-        font-size: 1.1rem;
-        font-weight: 700;
-    }
-
-    .stat-item p {
-        font-size: 0.65rem;
-        opacity: 0.85;
+        display: none;
     }
 
     .listings-section {
-        padding: 1rem 0;
+        padding: 0;
+        background: transparent;
+    }
+
+    .listings-section > .container {
+        padding: 0;
+    }
+
+    .listings-section .section-header {
+        padding: 0 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .listings-section .section-title h2 {
+        font-size: 1rem;
+    }
+
+    .filter-section {
+        display: none;
+    }
+
+    section[style*="background: white"] {
+        display: none;
     }
 
     .section-header {
