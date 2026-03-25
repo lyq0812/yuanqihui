@@ -241,9 +241,9 @@
         });
     }
     
-    // 数据获取函数
+    // 数据获取函数 - 只返回云端已批准的数据
     window.getApprovedListings = function() {
-        return fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=*', {
+        return fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=*&status=eq.approved&order=created_at.desc', {
             headers: {
                 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
                 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
@@ -252,18 +252,11 @@
         })
         .then(function(response) { return response.json(); })
         .then(function(dbListings) {
-            var localListings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
-            var allListings = [].concat(dbListings);
-            localListings.forEach(function(local) {
-                if (!allListings.find(function(l) { return l.id === local.id; })) {
-                    allListings.push(local);
-                }
-            });
-            return allListings;
+            return dbListings || [];
         })
         .catch(function(error) {
             console.error('获取云端数据失败', error);
-            return JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+            return [];
         });
     };
     
