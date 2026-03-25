@@ -1719,6 +1719,44 @@ a:hover {
         margin-right: 0.25rem;
     }
 
+    .mobile-login-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: rgba(255,255,255,0.25);
+        color: white;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        text-decoration: none;
+        transition: var(--transition-fast);
+        border: 1px solid rgba(255,255,255,0.3);
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .mobile-login-btn:hover {
+        background: rgba(255,255,255,0.35);
+        color: white;
+    }
+
+    .mobile-header-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .mobile-header-left {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex: 1;
+        gap: 0.5rem;
+        padding-left: 4.5rem;
+    }
+
     .mobile-menu-btn {
         position: absolute;
         right: 1rem;

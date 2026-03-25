@@ -178,17 +178,17 @@ function updateAllUserDisplays(user) {
     document.querySelectorAll('[id="user-name-display"]').forEach(function(el) {
         el.textContent = user.username || user.phone;
     });
-    
+
     // 更新所有 username-display
     document.querySelectorAll('[id="username-display"]').forEach(function(el) {
         el.textContent = user.username || user.phone;
     });
-    
+
     // 更新所有 user-phone-display
     document.querySelectorAll('[id="user-phone-display"]').forEach(function(el) {
         el.textContent = user.phone || '';
     });
-    
+
     // 隐藏所有 guest-info，显示所有 user-info
     document.querySelectorAll('[id="guest-info"]').forEach(function(el) {
         el.style.display = 'none';
@@ -196,13 +196,19 @@ function updateAllUserDisplays(user) {
     document.querySelectorAll('[id="user-info"]').forEach(function(el) {
         el.style.display = 'block';
     });
-    
+
     // 隐藏登录链接，显示退出链接
     document.querySelectorAll('[id="login-link"]').forEach(function(el) {
         el.style.display = 'none';
     });
     document.querySelectorAll('[id="logout-link"]').forEach(function(el) {
         el.style.display = 'inline-flex';
+    });
+
+    // 更新移动端登录按钮为用户名
+    document.querySelectorAll('.mobile-login-btn').forEach(function(el) {
+        el.innerHTML = '<i class="fas fa-user"></i> ' + (user.username || user.phone);
+        el.href = 'user.html';
     });
 }
 
