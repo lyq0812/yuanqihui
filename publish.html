@@ -371,174 +371,180 @@
         }
     </style>
     <script>
-        // 用户状态检查
-        function checkUserStatus() {
-            const session = localStorage.getItem('yqh_user');
-            const adminLink = document.getElementById('admin-link');
-            const userNameDisplay = document.getElementById('user-name-display');
-            const logoutLink = document.getElementById('logout-link');
-            const loginLink = document.getElementById('login-link');
-            const userCenterLink = document.getElementById('user-center-link');
-            
-            if (session) {
-                const user = JSON.parse(session);
-                userNameDisplay.textContent = user.username || user.phone;
-                
-                // 设置全局 currentUser
-                currentUser = user;
-                
-                if (logoutLink) logoutLink.style.display = 'inline-flex';
-                if (loginLink) loginLink.style.display = 'none';
-                if (userCenterLink) userCenterLink.style.display = 'inline-flex';
-                
-                if (user.role === 'admin') {
-                    adminLink.style.display = 'inline-flex';
-                }
-            } else {
-                userNameDisplay.textContent = '用户中心';
-                currentUser = null;
-                if (logoutLink) logoutLink.style.display = 'none';
-                if (loginLink) loginLink.style.display = 'inline-flex';
-                if (userCenterLink) userCenterLink.style.display = 'inline-flex';
-                if (adminLink) adminLink.style.display = 'none';
-            }
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // 用户状态检查
+            function checkUserStatus() {
+                const session = localStorage.getItem('yqh_user');
+                const adminLink = document.getElementById('admin-link');
+                const userNameDisplay = document.getElementById('user-name-display');
+                const logoutLink = document.getElementById('logout-link');
+                const loginLink = document.getElementById('login-link');
+                const userCenterLink = document.getElementById('user-center-link');
 
-        // 初始化
-        initAuth();
-        checkUserStatus();
-        
-        // 用户中心下拉菜单点击事件
-        var userDropdown = document.getElementById('user-dropdown');
-        var userDropdownBtn = document.getElementById('user-dropdown-btn');
-        if (userDropdown && userDropdownBtn) {
-            userDropdownBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                userDropdown.classList.toggle('active');
-            });
-            document.addEventListener('click', function(e) {
-                if (!userDropdown.contains(e.target)) {
-                    userDropdown.classList.remove('active');
-                }
-            });
-        }
-        
-        // 登录按钮事件
-        var authBtn = document.getElementById('auth-btn');
-        if (authBtn) {
-            authBtn.onclick = function() {
-                showLoginModal();
-            };
-        }
-        
-        // 立即登录/注册按钮
-        document.querySelectorAll('.login-trigger').forEach(function(btn) {
-            btn.onclick = function() { showLoginModal(); };
-        });
-        document.querySelectorAll('.register-trigger').forEach(function(btn) {
-            btn.onclick = function() { showRegister(); showLoginModal(); };
-        });
-        
-        // 图片预览功能
-        window.previewUploadedImage = function(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('preview-img').src = e.target.result;
-                    document.getElementById('image-preview').style.display = 'block';
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        };
-        
-        // 提交到云端
-        window.submitPropertyToDB = async function(property) {
-            try {
-                var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties', {
-                    method: 'POST',
-                    headers: {
-                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify(property)
-                });
-                
-                var data = await response.json();
-                console.log('保存结果:', response.status, data);
-                
-                if (response.ok || response.status === 201) {
-                    console.log('房源已保存到云端');
-                    return true;
+                if (session) {
+                    const user = JSON.parse(session);
+                    userNameDisplay.textContent = user.username || user.phone;
+
+                    // 设置全局 currentUser
+                    currentUser = user;
+
+                    if (logoutLink) logoutLink.style.display = 'inline-flex';
+                    if (loginLink) loginLink.style.display = 'none';
+                    if (userCenterLink) userCenterLink.style.display = 'inline-flex';
+
+                    if (user.role === 'admin') {
+                        adminLink.style.display = 'inline-flex';
+                    }
                 } else {
-                    console.error('保存失败:', response.status, data);
-                    alert('保存失败: ' + JSON.stringify(data));
+                    userNameDisplay.textContent = '用户中心';
+                    currentUser = null;
+                    if (logoutLink) logoutLink.style.display = 'none';
+                    if (loginLink) loginLink.style.display = 'inline-flex';
+                    if (userCenterLink) userCenterLink.style.display = 'inline-flex';
+                    if (adminLink) adminLink.style.display = 'none';
+                }
+            }
+
+            // 初始化
+            checkUserStatus();
+
+            // 用户中心下拉菜单点击事件
+            var userDropdown = document.getElementById('user-dropdown');
+            var userDropdownBtn = document.getElementById('user-dropdown-btn');
+            if (userDropdown && userDropdownBtn) {
+                userDropdownBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('active');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!userDropdown.contains(e.target)) {
+                        userDropdown.classList.remove('active');
+                    }
+                });
+            }
+
+            // 登录按钮事件
+            var authBtn = document.getElementById('auth-btn');
+            if (authBtn) {
+                authBtn.onclick = function() {
+                    showLoginModal();
+                };
+            }
+
+            // 立即登录/注册按钮
+            document.querySelectorAll('.login-trigger').forEach(function(btn) {
+                btn.onclick = function() { showLoginModal(); };
+            });
+            document.querySelectorAll('.register-trigger').forEach(function(btn) {
+                btn.onclick = function() { showRegister(); showLoginModal(); };
+            });
+
+            // 图片预览功能
+            window.previewUploadedImage = function(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('preview-img').src = e.target.result;
+                        document.getElementById('image-preview').style.display = 'block';
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            };
+
+            // 提交到云端
+            window.submitPropertyToDB = async function(property) {
+                try {
+                    var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties', {
+                        method: 'POST',
+                        headers: {
+                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=representation'
+                        },
+                        body: JSON.stringify(property)
+                    });
+
+                    var data = await response.json();
+                    if (response.ok || response.status === 201) {
+                        return true;
+                    } else {
+                        alert('保存失败: ' + JSON.stringify(data));
+                        return false;
+                    }
+                } catch (error) {
+                    alert('保存异常: ' + error.message);
                     return false;
                 }
-            } catch (error) {
-                console.error('保存异常:', error);
-                alert('保存异常: ' + error.message);
-                return false;
-            }
-        };
-        
-        // 提交函数
-        window.submitListingForm = function() {
-            if (!currentUser) {
-                alert('请先登录');
-                showLoginModal();
-                return;
-            }
-            
-            var title = document.getElementById('listing-title').value.trim();
-            var region = document.getElementById('listing-region').value;
-            var area = document.getElementById('listing-area').value;
-            
-            if (!title) {
-                alert('请填写房源标题');
-                return;
-            }
-            if (!region) {
-                alert('请选择所在地区');
-                return;
-            }
-            if (!area) {
-                alert('请填写厂房面积');
-                return;
-            }
-            
-            var listing = {
-                title: title,
-                region: region,
-                area: String(area),
-                height: String(document.getElementById('listing-height').value || '6'),
-                price: String(document.getElementById('listing-price').value || '0'),
-                type: document.getElementById('listing-type').value || '',
-                location: document.getElementById('listing-location').value || '',
-                contact: currentUser.phone || '',
-                description: document.getElementById('listing-description').value || '',
-                fire_rating: document.getElementById('listing-fire').value || '',
-                eia_available: document.getElementById('listing-eia').checked ? 'true' : 'false',
-                images: [],
-                status: 'approved',
-                user_id: currentUser.id,
-                user_phone: currentUser.phone || ''
             };
-            
-            listing.tags = [];
-            if (document.getElementById('tag-urgent').checked) listing.tags.push('急租');
-            if (document.getElementById('tag-divisible').checked) listing.tags.push('可分租');
-            if (document.getElementById('tag-fire').checked) listing.tags.push('丙二类消防');
-            if (document.getElementById('listing-eia').checked) listing.tags.push('可办环评');
-            
-            var imageInput = document.getElementById('listing-image');
-            var form = document.getElementById('publish-form-container');
-            if (imageInput.files && imageInput.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    listing.images = [e.target.result];
+
+            // 提交函数
+            window.submitListingForm = function() {
+                if (!currentUser) {
+                    alert('请先登录');
+                    showLoginModal();
+                    return;
+                }
+
+                var title = document.getElementById('listing-title').value.trim();
+                var region = document.getElementById('listing-region').value;
+                var area = document.getElementById('listing-area').value;
+
+                if (!title) {
+                    alert('请填写房源标题');
+                    return;
+                }
+                if (!region) {
+                    alert('请选择所在地区');
+                    return;
+                }
+                if (!area) {
+                    alert('请填写厂房面积');
+                    return;
+                }
+
+                var listing = {
+                    title: title,
+                    region: region,
+                    area: String(area),
+                    height: String(document.getElementById('listing-height').value || '6'),
+                    price: String(document.getElementById('listing-price').value || '0'),
+                    type: document.getElementById('listing-type').value || '',
+                    location: document.getElementById('listing-location').value || '',
+                    contact: currentUser.phone || '',
+                    description: document.getElementById('listing-description').value || '',
+                    fire_rating: document.getElementById('listing-fire').value || '',
+                    eia_available: document.getElementById('listing-eia').checked ? 'true' : 'false',
+                    images: [],
+                    status: 'approved',
+                    user_id: currentUser.id,
+                    user_phone: currentUser.phone || ''
+                };
+
+                listing.tags = [];
+                if (document.getElementById('tag-urgent').checked) listing.tags.push('急租');
+                if (document.getElementById('tag-divisible').checked) listing.tags.push('可分租');
+                if (document.getElementById('tag-fire').checked) listing.tags.push('丙二类消防');
+                if (document.getElementById('listing-eia').checked) listing.tags.push('可办环评');
+
+                var imageInput = document.getElementById('listing-image');
+                var form = document.getElementById('publish-form-container');
+                if (imageInput.files && imageInput.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        listing.images = [e.target.result];
+                        window.submitPropertyToDB(listing).then(function(success) {
+                            alert(success ? '发布成功！' : '发布失败，请重试');
+                            if (form) form.reset();
+                            setTimeout(function() {
+                                window.location.href = 'listings.html';
+                            }, 1500);
+                        });
+                    };
+                    reader.readAsDataURL(imageInput.files[0]);
+                } else {
+                    listing.images = ['https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800'];
                     window.submitPropertyToDB(listing).then(function(success) {
                         alert(success ? '发布成功！' : '发布失败，请重试');
                         if (form) form.reset();
@@ -546,26 +552,14 @@
                             window.location.href = 'listings.html';
                         }, 1500);
                     });
-                };
-                reader.readAsDataURL(imageInput.files[0]);
-            } else {
-                listing.images = ['https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800'];
-                window.submitPropertyToDB(listing).then(function(success) {
-                    alert(success ? '发布成功！' : '发布失败，请重试');
-                    if (form) form.reset();
-                    setTimeout(function() {
-                        window.location.href = 'listings.html';
-                    }, 1500);
-                });
-            }
-        };
-        
-        // 绑定提交按钮事件
-        document.getElementById('submit-btn').addEventListener('click', function() {
-            window.submitListingForm();
+                }
+            };
+
+            // 绑定提交按钮事件
+            document.getElementById('submit-btn').addEventListener('click', function() {
+                window.submitListingForm();
+            });
         });
-        
-        checkUserStatus();
     </script>
 </body>
 </html>

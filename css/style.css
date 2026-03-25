@@ -2161,9 +2161,21 @@ a:hover {
     }
 
     .publish-form {
-        padding: 1.25rem;
+        padding: 1rem;
         border-radius: 12px;
-        margin: 0 1rem;
+        margin: 0 0.75rem;
+    }
+
+    .publish-form input,
+    .publish-form select,
+    .publish-form textarea {
+        font-size: 16px !important;
+        padding: 0.75rem !important;
+    }
+
+    .publish-form .btn-submit {
+        padding: 1rem;
+        font-size: 1rem;
     }
 
     .form-title h2 {
