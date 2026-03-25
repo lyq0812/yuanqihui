@@ -454,6 +454,7 @@
 
             // 提交到云端
             window.submitPropertyToDB = async function(property) {
+                console.log('发送的数据:', JSON.stringify(property));
                 try {
                     var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties', {
                         method: 'POST',
@@ -465,8 +466,11 @@
                         },
                         body: JSON.stringify(property)
                     });
+                    console.log('响应状态:', response.status);
 
                     var data = await response.json();
+                    console.log('响应数据:', data);
+
                     if (response.ok || response.status === 201) {
                         return true;
                     } else {
@@ -474,6 +478,7 @@
                         return false;
                     }
                 } catch (error) {
+                    console.error('保存异常:', error);
                     alert('保存异常: ' + error.message);
                     return false;
                 }
@@ -507,26 +512,14 @@
                 var listing = {
                     title: title,
                     region: region,
-                    area: String(area),
-                    height: String(document.getElementById('listing-height').value || '6'),
-                    price: String(document.getElementById('listing-price').value || '0'),
+                    area: area,
+                    price: document.getElementById('listing-price').value || '0',
                     type: document.getElementById('listing-type').value || '',
                     location: document.getElementById('listing-location').value || '',
-                    contact: currentUser.phone || '',
                     description: document.getElementById('listing-description').value || '',
-                    fire_rating: document.getElementById('listing-fire').value || '',
-                    eia_available: document.getElementById('listing-eia').checked ? 'true' : 'false',
-                    images: [],
-                    status: 'approved',
-                    user_id: currentUser.id,
-                    user_phone: currentUser.phone || ''
+                    images: '[]',
+                    status: 'approved'
                 };
-
-                listing.tags = [];
-                if (document.getElementById('tag-urgent').checked) listing.tags.push('急租');
-                if (document.getElementById('tag-divisible').checked) listing.tags.push('可分租');
-                if (document.getElementById('tag-fire').checked) listing.tags.push('丙二类消防');
-                if (document.getElementById('listing-eia').checked) listing.tags.push('可办环评');
 
                 var imageInput = document.getElementById('listing-image');
                 var form = document.getElementById('publish-form-container');

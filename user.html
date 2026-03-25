@@ -638,7 +638,7 @@
             const localData = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
             
             try {
-                const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=*', {
+                const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=*&t=' + new Date().getTime(), {
                     headers: {
                         'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
                         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
@@ -819,7 +819,7 @@
             
             if (confirm('确定删除此房源吗？')) {
                 try {
-                    await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?id=eq.' + id, {
+                    await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?id=eq.' + id + '&t=' + new Date().getTime(), {
                         method: 'DELETE',
                         headers: {
                             'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
@@ -827,7 +827,7 @@
                         }
                     });
                 } catch (e) {}
-                
+
                 let list = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
                 list = list.filter(l => l.id !== id);
                 localStorage.setItem('yqh_listings', JSON.stringify(list));
