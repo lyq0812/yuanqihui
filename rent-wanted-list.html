@@ -308,11 +308,23 @@
             </div>
 
             <div id="wanted-list">
-                <!-- Loaded by JS -->
+                <!-- Skeleton loading -->
+                <div class="skeleton-list">
+                    <div class="skeleton-list-item"><div class="skeleton skeleton-list-image"></div><div class="skeleton-list-content"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div></div></div>
+                    <div class="skeleton-list-item"><div class="skeleton skeleton-list-image"></div><div class="skeleton-list-content"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div></div></div>
+                    <div class="skeleton-list-item"><div class="skeleton skeleton-list-image"></div><div class="skeleton-list-content"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div></div></div>
+                </div>
+            </div>
+
+            <div class="load-more-container" id="wanted-load-more" style="display: none;">
+                <button class="btn-load-more" id="wanted-load-more-btn" onclick="loadMoreWanted()">
+                    <span class="btn-text">加载更多</span>
+                    <span class="spinner" style="display: none;"></span>
+                </button>
             </div>
 
             <!-- Pagination -->
-            <div class="pagination" id="pagination" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+            <div class="pagination" id="pagination" style="display: none; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
             </div>
         </div>
     </section>
@@ -560,14 +572,90 @@
             await renderList();
         }
 
+        // 加载求租数据
+        function loadWantedData() {
+            var container = document.getElementById('wanted-list');
+            container.innerHTML = '<div class="skeleton-list"><div class="skeleton-list-item"><div class="skeleton skeleton-list-image"></div><div class="skeleton-list-content"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div></div></div><div class="skeleton-list-item"><div class="skeleton skeleton-list-image"></div><div class="skeleton-list-content"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div></div></div></div>';
+
+            getWantedCount().then(function(count) {
+                wantedTotalCount = count;
+                var totalCountEl = document.getElementById('total-count');
+                if (totalCountEl) {
+                    totalCountEl.textContent = '共 ' + count + ' 条求租信息';
+                }
+                updateWantedLoadMoreVisibility();
+            });
+
+            getWantedPaginated(wantedCurrentPage, wantedPageSize).then(function(data) {
+                if (wantedCurrentPage === 1) {
+                    wantedAllData = data || [];
+                } else {
+                    wantedAllData = wantedAllData.concat(data || []);
+                }
+                renderWantedWithData(wantedAllData);
+            }).catch(function(e) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h4>加载失败</h4><p>请刷新页面重试</p></div>';
+            });
+        }
+
+        // 加载更多
+        function loadMoreWanted() {
+            var btn = document.getElementById('wanted-load-more-btn');
+            var btnText = btn.querySelector('.btn-text');
+            var spinner = btn.querySelector('.spinner');
+
+            btn.disabled = true;
+            btnText.textContent = '加载中...';
+            spinner.style.display = 'inline-block';
+
+            wantedCurrentPage++;
+
+            getWantedPaginated(wantedCurrentPage, wantedPageSize).then(function(data) {
+                wantedAllData = wantedAllData.concat(data);
+                renderWantedWithData(wantedAllData);
+
+                btn.disabled = false;
+                btnText.textContent = '加载更多';
+                spinner.style.display = 'none';
+                updateWantedLoadMoreVisibility();
+            }).catch(function(e) {
+                wantedCurrentPage--;
+                btn.disabled = false;
+                btnText.textContent = '加载更多';
+                spinner.style.display = 'none';
+            });
+        }
+
+        // 更新加载更多按钮显示
+        function updateWantedLoadMoreVisibility() {
+            var loadMoreContainer = document.getElementById('wanted-load-more');
+            if (loadMoreContainer) {
+                if (wantedAllData.length >= wantedTotalCount) {
+                    loadMoreContainer.style.display = 'none';
+                } else {
+                    loadMoreContainer.style.display = 'block';
+                }
+            }
+        }
+
+        // 使用数据渲染求租列表
+        function renderWantedWithData(wanted) {
+            var container = document.getElementById('wanted-list');
+            if (!wanted || wanted.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><h4>暂无求租信息</h4><p>成为第一个发布求租信息的人</p></div>';
+                return;
+            }
+            container.innerHTML = wanted.map(function(item) { return renderWantedCard(item); }).join('');
+            updateWantedLoadMoreVisibility();
+        }
+
         // 从云端获取已批准的求租
         async function getApprovedWantedFromDB() {
             try {
                 const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?select=*&status=eq.approved&order=created_at.desc', {
                     headers: {
                         'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                        'Cache-Control': 'no-cache'
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
                     }
                 });
                 const data = await response.json();
@@ -660,30 +748,45 @@
             } catch(e) {}
         }
         
+        // 求租分页状态
+        var wantedCurrentPage = 1;
+        var wantedPageSize = 10;
+        var wantedTotalCount = 0;
+        var wantedAllData = [];
+
+        // 分页获取求租数据
+        function getWantedPaginated(page, pageSize) {
+            var offset = (page - 1) * pageSize;
+            var url = 'https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?select=*&status=eq.approved&order=created_at.desc&limit=' + pageSize + '&offset=' + offset;
+            return fetch(url, {
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                }
+            }).then(function(response) { return response.json(); });
+        }
+
+        // 获取求租总数
+        function getWantedCount() {
+            return fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?status=eq.approved&select=id', {
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+                }
+            }).then(function(response) { return response.json(); })
+              .then(function(data) { return data ? data.length : 0; });
+        }
+
         // 页面初始化
         function initListingPage() {
             initFilters();
-            // 先显示本地缓存
-            var cached = localStorage.getItem('yqh_rent_wanted');
-            if (cached) {
-                renderList();
-            }
-            // 再异步获取云端
-            getApprovedWantedFromDB().then(function(data) {
-                if (data && data.length > 0) {
-                    localStorage.setItem('yqh_rent_wanted', JSON.stringify(data));
-                    renderList();
-                }
-            }).catch(function(e) {});
-        }
-        
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            initListingPage();
-            
+            loadWantedData();
+
             // 每30秒自动刷新
             setInterval(function() {
-                renderList();
+                wantedCurrentPage = 1;
+                wantedAllData = [];
+                loadWantedData();
             }, 30000);
             
             // 移动端菜单
@@ -715,10 +818,16 @@
                     });
                 }
             }
-        });
+        }
         
-        // 初始化
-        checkUserStatus();
+        // DOM加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化页面
+            initListingPage();
+            
+            // 初始化用户状态
+            checkUserStatus();
+        });
         
         // 用户中心下拉菜单点击事件
         var userDropdown = document.getElementById('user-dropdown');

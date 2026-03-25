@@ -178,10 +178,22 @@
             </div>
             
             <div class="listings-grid" id="listings-container">
-                <!-- Listings loaded by JS -->
+                <!-- Skeleton loading -->
+                <div class="skeleton-grid">
+                    <div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div>
+                </div>
             </div>
-            
-            <div class="pagination" id="pagination">
+
+            <div class="load-more-container" id="listings-load-more" style="display: none;">
+                <button class="btn-load-more" id="listings-load-more-btn" onclick="loadMoreListings()">
+                    <span class="btn-text">加载更多</span>
+                    <span class="spinner" style="display: none;"></span>
+                </button>
+            </div>
+
+            <div class="pagination" id="pagination" style="display: none;">
                 <!-- Pagination loaded by JS -->
             </div>
         </div>
@@ -330,10 +342,11 @@
             var safeType = escapeHtml(listing.type);
             var safeImg = escapeHtml(img);
             var safeContactTel = sanitizePhone(listing.contact || '');
-            
-            return '<article class="listing-card fade-in">' +
+            var detailUrl = 'detail.html?id=' + (listing.id || '');
+
+            return '<article class="listing-card fade-in" onclick="window.location.href=\'' + detailUrl + '\'">' +
                 '<div class="listing-image">' +
-                    '<a href="detail.html?id=' + listing.id + '">' +
+                    '<a href="' + detailUrl + '">' +
                         '<img src="' + safeImg + '" alt="' + safeTitle + '" loading="lazy">' +
                     '</a>' +
                     '<div class="listing-tags">' +
@@ -345,7 +358,7 @@
                     '<span class="listing-region">' + safeRegion + '</span>' +
                 '</div>' +
                 '<div class="listing-content">' +
-                    '<h3><a href="detail.html?id=' + listing.id + '">' + safeTitle + '</a></h3>' +
+                    '<h3><a href="' + detailUrl + '">' + safeTitle + '</a></h3>' +
                     '<div class="listing-meta">' +
                         '<span><i class="fas fa-vector-square"></i> ' + escapeHtml(listing.area) + '㎡</span>' +
                         '<span><i class="fas fa-ruler-vertical"></i> ' + escapeHtml(listing.height) + '米</span>' +
@@ -365,19 +378,20 @@
         function localRenderListingsGrid(listings, containerId) {
             var container = document.getElementById(containerId);
             if (!container) return;
-            
+
             if (listings.length === 0) {
                 container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><h4>暂无符合条件的房源</h4><p>请尝试调整筛选条件或发布您的房源</p></div>';
                 return;
             }
-            
+
             var html = '';
             listings.forEach(function(listing) {
                 var img = listing.images && listing.images.length > 0 ? listing.images[0] : '';
                 var tags = listing.tags || [];
-                html += '<article class="listing-card fade-in">' +
+                var detailUrl = 'detail.html?id=' + (listing.id || '');
+                html += '<article class="listing-card fade-in" onclick="window.location.href=\'' + detailUrl + '\'">' +
                     '<div class="listing-image">' +
-                        '<a href="detail.html?id=' + listing.id + '">' +
+                        '<a href="' + detailUrl + '">' +
                             '<img src="' + img + '" alt="' + (listing.title || '') + '" loading="lazy">' +
                         '</a>' +
                         '<div class="listing-tags">' +
@@ -389,7 +403,7 @@
                         '<span class="listing-region">' + (listing.region || '') + '</span>' +
                     '</div>' +
                     '<div class="listing-content">' +
-                        '<h3><a href="detail.html?id=' + listing.id + '">' + (listing.title || '') + '</a></h3>' +
+                        '<h3><a href="' + detailUrl + '">' + (listing.title || '') + '</a></h3>' +
                         '<div class="listing-meta">' +
                             '<span><i class="fas fa-vector-square"></i> ' + (listing.area || '') + '㎡</span>' +
                             '<span><i class="fas fa-ruler-vertical"></i> ' + (listing.height || '') + '米</span>' +
@@ -533,33 +547,166 @@
             }
         }
         
+        // 列表分页状态
+        var listingsCurrentPage = 1;
+        var listingsPageSize = 10;
+        var listingsTotalCount = 0;
+        var listingsAllData = [];
+        var listingsCurrentFilters = {};
+
         // 页面初始化
         function initListingPage() {
+            console.log('listings页面初始化开始...');
             initFiltersFromUrl();
             initAuth();
+
+            console.log('开始加载房源数据...');
+
+            // 排序变化时重置
             document.getElementById('sort-order').addEventListener('change', function() {
-                getApprovedListings().then(function(allListings) {
-                    applyFiltersWithData(allListings);
+                listingsCurrentPage = 1;
+                listingsAllData = [];
+                loadListingsData();
+            });
+
+            // 筛选变化时重置
+            document.querySelectorAll('#filter-region, #filter-area, #filter-type').forEach(function(el) {
+                el.addEventListener('change', function() {
+                    listingsCurrentPage = 1;
+                    listingsAllData = [];
+                    loadListingsData();
                 });
             });
 
-            // 从云端获取最新数据
-            console.log('listings页面：正在获取云端数据...');
-            getApprovedListings().then(function(allListings) {
-                console.log('listings页面：获取到云端数据', allListings.length, '条');
-                applyFiltersWithData(allListings);
-            }).catch(function(err) {
-                console.error('listings页面：获取云端数据失败', err);
-            });
+            // 加载数据
+            loadListingsData();
 
             checkUserStatus();
 
             // 每30秒自动刷新一次
             setInterval(function() {
-                getApprovedListings().then(function(allListings) {
-                    applyFiltersWithData(allListings);
-                });
+                listingsCurrentPage = 1;
+                listingsAllData = [];
+                loadListingsData();
             }, 30000);
+        }
+
+        // 加载列表数据
+        function loadListingsData() {
+            console.log('loadListingsData 被调用');
+            var container = document.getElementById('listings-container');
+            container.innerHTML = '<div class="skeleton-grid"><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div></div>';
+
+            console.log('获取总数...');
+            // 获取总数
+            getListingsCount().then(function(count) {
+                console.log('总数:', count);
+                listingsTotalCount = count;
+                var resultCountEl = document.getElementById('result-count');
+                if (resultCountEl) {
+                    resultCountEl.innerHTML = '共找到 <strong style="color: var(--primary);">' + count + '</strong> 条房源';
+                }
+                updateLoadMoreVisibility();
+            });
+
+            console.log('获取房源数据...');
+            // 分页获取数据
+            getListingsPaginated('id,title,region,area,price,images,status,created_at', listingsCurrentPage, listingsPageSize).then(function(listings) {
+                console.log('获取到房源:', listings ? listings.length : 0, '条');
+                if (listingsCurrentPage === 1) {
+                    listingsAllData = listings || [];
+                } else {
+                    listingsAllData = listingsAllData.concat(listings || []);
+                }
+                applyFiltersAndRender(listingsAllData);
+            }).catch(function(err) {
+                console.error('listings页面：获取云端数据失败', err);
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h4>加载失败</h4><p>请刷新页面重试</p></div>';
+            });
+        }
+
+        // 加载更多
+        function loadMoreListings() {
+            var btn = document.getElementById('listings-load-more-btn');
+            if (!btn) return;
+
+            var btnText = btn.querySelector('.btn-text');
+            var spinner = btn.querySelector('.spinner');
+
+            btn.disabled = true;
+            btnText.textContent = '加载中...';
+            spinner.style.display = 'inline-block';
+
+            listingsCurrentPage++;
+
+            getListingsPaginated('id,title,region,area,price,images,status,created_at', listingsCurrentPage, listingsPageSize).then(function(listings) {
+                listingsAllData = listingsAllData.concat(listings);
+                applyFiltersAndRender(listingsAllData);
+
+                btn.disabled = false;
+                btnText.textContent = '加载更多';
+                spinner.style.display = 'none';
+                updateLoadMoreVisibility();
+            }).catch(function(err) {
+                console.error('加载更多失败', err);
+                listingsCurrentPage--;
+                btn.disabled = false;
+                btnText.textContent = '加载更多';
+                spinner.style.display = 'none';
+            });
+        }
+
+        // 更新加载更多按钮显示
+        function updateLoadMoreVisibility() {
+            var loadMoreContainer = document.getElementById('listings-load-more');
+            var pagination = document.getElementById('pagination');
+
+            if (loadMoreContainer) {
+                if (listingsAllData.length >= listingsTotalCount) {
+                    loadMoreContainer.style.display = 'none';
+                } else {
+                    loadMoreContainer.style.display = 'block';
+                }
+            }
+            if (pagination) {
+                pagination.style.display = 'none';
+            }
+        }
+
+        // 应用筛选并渲染
+        function applyFiltersAndRender(listings) {
+            var region = document.getElementById('filter-region').value;
+            var area = document.getElementById('filter-area').value;
+            var type = document.getElementById('filter-type').value;
+            var sort = document.getElementById('sort-order').value;
+
+            var filtered = listings;
+
+            if (region && region !== '全部') {
+                filtered = filtered.filter(function(item) { return item.region === region; });
+            }
+            if (area && area !== '全部') {
+                filtered = filtered.filter(function(item) { return item.area === area; });
+            }
+            if (type && type !== '全部') {
+                filtered = filtered.filter(function(item) { return item.type === type; });
+            }
+
+            // 排序
+            if (sort === 'price-asc') {
+                filtered.sort(function(a, b) { return (a.price || 0) - (b.price || 0); });
+            } else if (sort === 'price-desc') {
+                filtered.sort(function(a, b) { return (b.price || 0) - (a.price || 0); });
+            } else if (sort === 'area-asc') {
+                filtered.sort(function(a, b) { return (a.area || 0) - (b.area || 0); });
+            } else {
+                filtered.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+            }
+
+            document.getElementById('result-count').innerHTML = '共找到 <strong style="color: var(--primary);">' + filtered.length + '</strong> 条房源';
+
+            renderListingsGrid(filtered, 'listings-container');
+            updateLoadMoreVisibility();
         }
 
         document.addEventListener('DOMContentLoaded', function() {

@@ -149,12 +149,13 @@ function renderListingsGrid(listings, containerId) {
         if (listing.images && listing.images.length > 0) {
             imageHtml = '<img src="' + listing.images[0] + '" alt="' + escapeHtml(listing.title) + '" style="width:100%;height:100%;object-fit:cover;">';
         }
-        return '<div class="listing-card">' +
+        var detailUrl = 'detail.html?id=' + (listing.id || '');
+        return '<div class="listing-card" onclick="window.location.href=\'' + detailUrl + '\'">' +
             '<div class="listing-image">' +
                 imageHtml +
             '</div>' +
             '<div class="listing-content">' +
-                '<h3><a href="detail.html?id=' + listing.id + '">' + escapeHtml(listing.title) + '</a></h3>' +
+                '<h3><a href="' + detailUrl + '">' + escapeHtml(listing.title) + '</a></h3>' +
                 '<div class="listing-info">' +
                     '<span><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(listing.region) + '</span>' +
                     '<span><i class="fas fa-vector-square"></i> ' + escapeHtml(listing.area) + '㎡</span>' +
