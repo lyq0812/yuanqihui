@@ -424,27 +424,19 @@
         // 刷新房源列表
         async function refreshListings() {
             document.getElementById('debug-info').innerHTML = 'refreshListings 被调用，正在从云端获取数据...';
-            
+
             // 从云端获取数据
             const allListings = await getApprovedListings();
             document.getElementById('debug-info').innerHTML = 'refreshListings 房源数量: ' + allListings.length + ' - 准备排序';
-            
-            // 保存到本地存储
-            localStorage.setItem(LOCAL_STORAGE_KEYS.LISTINGS, JSON.stringify(allListings));
-            document.getElementById('debug-info').innerHTML = 'refreshListings 数据已保存到本地存储，共 ' + allListings.length + ' 条';
-            
-            // 触发筛选应用
-            applyFilters();
+
+            // 触发筛选应用（直接使用云端数据，不缓存）
+            applyFiltersWithData(allListings);
         }
-        
-        // 应用筛选
-        function applyFilters() {
-            document.getElementById('debug-info').innerHTML = 'applyFilters 被调用，正在从本地获取数据...';
-            
-            // 从本地存储获取数据
-            const allListings = localGetListings();
+
+        // 应用筛选（使用传入的云端数据）
+        function applyFiltersWithData(allListings) {
             document.getElementById('debug-info').innerHTML = 'applyFilters 房源数量: ' + allListings.length + ' - 准备排序';
-            
+
             const region = document.getElementById('filter-region').value;
             const area = document.getElementById('filter-area').value;
             const type = document.getElementById('filter-type').value;
@@ -545,36 +537,31 @@
         function initListingPage() {
             initFiltersFromUrl();
             initAuth();
-            document.getElementById('sort-order').addEventListener('change', applyFilters);
-            
-            // 先显示本地缓存数据，立即呈现
-            var cachedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.LISTINGS) || '[]');
-            if (cachedData.length > 0) {
-                console.log('先显示本地缓存数据:', cachedData.length, '条');
-                applyFilters();
-            }
-            
-            // 再从云端获取最新数据更新
+            document.getElementById('sort-order').addEventListener('change', function() {
+                getApprovedListings().then(function(allListings) {
+                    applyFiltersWithData(allListings);
+                });
+            });
+
+            // 从云端获取最新数据
             console.log('listings页面：正在获取云端数据...');
             getApprovedListings().then(function(allListings) {
                 console.log('listings页面：获取到云端数据', allListings.length, '条');
-                localStorage.setItem(LOCAL_STORAGE_KEYS.LISTINGS, JSON.stringify(allListings));
-                applyFilters();
+                applyFiltersWithData(allListings);
             }).catch(function(err) {
                 console.error('listings页面：获取云端数据失败', err);
             });
-            
+
             checkUserStatus();
-            
+
             // 每30秒自动刷新一次
             setInterval(function() {
                 getApprovedListings().then(function(allListings) {
-                    localStorage.setItem(LOCAL_STORAGE_KEYS.LISTINGS, JSON.stringify(allListings));
-                    applyFilters();
+                    applyFiltersWithData(allListings);
                 });
             }, 30000);
         }
-        
+
         document.addEventListener('DOMContentLoaded', function() {
             initListingPage();
         });

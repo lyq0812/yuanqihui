@@ -432,13 +432,9 @@
         
         // 渲染首页房源
         function renderHomeListings() {
-            var cached = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
-            if (cached.length > 0) {
-                renderListingsGrid(cached.slice(0, 6), 'home-listings');
-            }
             getApprovedListings().then(function(listings) {
                 console.log('首页房源数据:', listings);
-                renderListingsGrid(listings.slice(0, 6), 'home-listings');
+                renderListingsGrid(listings, 'home-listings');
             }).catch(function(e) {
                 console.error('加载失败:', e);
             });
@@ -451,18 +447,12 @@
                 this.classList.add('active');
                 
                 const region = this.dataset.region;
-                var cached = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
-                var listings = cached;
-                
                 getApprovedListings().then(function(cloudListings) {
-                    listings = cloudListings;
-                    localStorage.setItem('yqh_listings', JSON.stringify(cloudListings));
+                    var listings = cloudListings;
                     if (region !== '全部') {
                         listings = cloudListings.filter(item => item.region === region);
-                    } else {
-                        listings = cloudListings;
                     }
-                    renderListingsGrid(listings.slice(0, 6), 'home-listings');
+                    renderListingsGrid(listings, 'home-listings');
                 });
             });
         });
