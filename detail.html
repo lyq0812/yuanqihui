@@ -183,7 +183,7 @@
 
 
     <script src="js/config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/toast.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <style>
@@ -286,6 +286,17 @@
 
             // 设置联系方式
             document.getElementById('contact-phone').innerHTML = listing.contact ? '<a href="tel:' + listing.contact + '">' + listing.contact + '</a>' : '暂无';
+
+            // 动态更新 SEO meta 标签
+            document.title = (listing.title || '房源详情') + ' - 园企汇陕西厂房出租网';
+            var metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute('content', (listing.region || '') + '厂房出租，' + (listing.area || '') + '㎡，价格' + (listing.price ? '¥' + listing.price + '/月' : '面议') + '。' + (listing.description ? listing.description.substring(0, 50) : ''));
+            }
+            var ogTitle = document.querySelector('meta[property="og:title"]');
+            if (ogTitle) ogTitle.setAttribute('content', listing.title || '房源详情');
+            var ogDesc = document.querySelector('meta[property="og:description"]');
+            if (ogDesc) ogDesc.setAttribute('content', (listing.region || '') + '厂房，' + (listing.area || '') + '㎡，' + (listing.price ? '¥' + listing.price + '/月' : '价格面议'));
 
             // 渲染附近房源（使用已获取的数据，不重复调用API）
             var nearby = listings.filter(item => item.id != listingId).slice(0, 3);

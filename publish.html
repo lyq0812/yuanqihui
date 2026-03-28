@@ -272,8 +272,8 @@
 
 
     <script src="js/config.js"></script>
+    <script src="js/toast.js"></script>
     <script src="js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/main.js"></script>
     <style>
         .btn-login, .btn-user {
@@ -429,12 +429,12 @@
                         }
                         return true;
                     } else {
-                        alert('保存失败: ' + JSON.stringify(data));
+                        toast.show('保存失败，请重试', 'error');
                         return false;
                     }
                 } catch (error) {
                     console.error('保存异常:', error);
-                    alert('保存异常: ' + error.message);
+                    toast.show('保存异常: ' + error.message, 'error');
                     return false;
                 }
             };
@@ -442,7 +442,7 @@
             // 提交函数
             window.submitListingForm = function() {
                 if (!currentUser) {
-                    alert('请先登录');
+                    toast.show('请先登录', 'warning');
                     showLoginModal();
                     return;
                 }
@@ -452,19 +452,20 @@
                 var area = document.getElementById('listing-area').value;
 
                 if (!title) {
-                    alert('请填写房源标题');
+                    toast.show('请填写房源标题', 'warning');
                     return;
                 }
                 if (!region) {
-                    alert('请选择所在地区');
+                    toast.show('请选择所在地区', 'warning');
                     return;
                 }
                 if (!area) {
-                    alert('请填写厂房面积');
+                    toast.show('请填写厂房面积', 'warning');
                     return;
                 }
 
                 var listing = {
+                    user_id: currentUser.user_id,
                     title: title,
                     region: region,
                     area: area,
@@ -473,7 +474,8 @@
                     location: document.getElementById('listing-location').value || '',
                     description: document.getElementById('listing-description').value || '',
                     images: '[]',
-                    status: 'approved'
+                    status: 'approved',
+                    contact: currentUser.phone || ''
                 };
 
                 var imageInput = document.getElementById('listing-image');
@@ -483,22 +485,30 @@
                     reader.onload = function(e) {
                         listing.images = [e.target.result];
                         window.submitPropertyToDB(listing).then(function(success) {
-                            alert(success ? '发布成功！' : '发布失败，请重试');
-                            if (form) form.reset();
-                            setTimeout(function() {
-                                window.location.href = 'listings.html';
-                            }, 1500);
+                            if (success) {
+                                toast.show('发布成功！', 'success');
+                                if (form) form.reset();
+                                setTimeout(function() {
+                                    window.location.href = 'listings.html';
+                                }, 1500);
+                            } else {
+                                toast.show('发布失败，请重试', 'error');
+                            }
                         });
                     };
                     reader.readAsDataURL(imageInput.files[0]);
                 } else {
                     listing.images = ['https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800'];
                     window.submitPropertyToDB(listing).then(function(success) {
-                        alert(success ? '发布成功！' : '发布失败，请重试');
-                        if (form) form.reset();
-                        setTimeout(function() {
-                            window.location.href = 'listings.html';
-                        }, 1500);
+                        if (success) {
+                            toast.show('发布成功！', 'success');
+                            if (form) form.reset();
+                            setTimeout(function() {
+                                window.location.href = 'listings.html';
+                            }, 1500);
+                        } else {
+                            toast.show('发布失败，请重试', 'error');
+                        }
                     });
                 }
             };

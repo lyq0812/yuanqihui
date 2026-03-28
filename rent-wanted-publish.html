@@ -256,8 +256,8 @@
 
 
     <script src="js/config.js"></script>
+    <script src="js/toast.js"></script>
     <script src="js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
      <script src="js/main.js"></script>
     <script>
         console.log('求租发布页面加载完成');
@@ -265,29 +265,29 @@
         // 检查 submitRentWanted 是否定义
         window.submitRentWanted = function() {
             if (!currentUser) {
-                alert('请先登录');
+                toast.show('请先登录', 'warning');
                 return;
             }
-            
+
             var title = document.getElementById('rw-title').value.trim();
             var region = document.getElementById('rw-region').value;
             var area = document.getElementById('rw-area').value;
             var type = document.getElementById('rw-type').value;
-            
+
             if (!title) {
-                alert('请填写求租标题');
+                toast.show('请填写求租标题', 'warning');
                 return;
             }
             if (!region) {
-                alert('请选择所在地区');
+                toast.show('请选择所在地区', 'warning');
                 return;
             }
             if (!area) {
-                alert('请填写需求面积');
+                toast.show('请填写需求面积', 'warning');
                 return;
             }
             if (!type) {
-                alert('请选择厂房类型');
+                toast.show('请选择厂房类型', 'warning');
                 return;
             }
             
@@ -312,13 +312,13 @@
                     if (typeof clearRequestsCache === 'function') {
                         clearRequestsCache();
                     }
-                    alert('发布成功！');
+                    toast.show('发布成功！', 'success');
                     document.getElementById('rent-wanted-form').reset();
                     setTimeout(function() {
                         window.location.href = 'rent-wanted-list.html';
                     }, 1500);
                 } else {
-                    alert('发布失败，请重试');
+                    toast.show('发布失败，请重试', 'error');
                 }
             });
         };

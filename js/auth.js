@@ -301,8 +301,8 @@
         });
     }
 
-    // 最小字段列表 - 列表页只需要这些
-    var LIST_MINIMAL_FIELDS = 'id,title,region,area,price,images,status,created_at';
+    // 最小字段列表 - 列表页和详情页都需要
+    var LIST_MINIMAL_FIELDS = 'id,title,region,area,price,images,status,created_at,contact,description,type,height,fire_rating,tags';
 
     // 后台静默更新标志
     var isBackgroundRefreshing = false;
