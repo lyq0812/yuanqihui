@@ -1,31 +1,8 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "echo 'Static site'",
   "outputDirectory": ".",
   "framework": null,
-  "functions": {
-    "api/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "headers": [
-    {
-      "source": "/api/listings",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, s-maxage=3600, stale-while-revalidate=86400"
-        }
-      ]
-    },
-    {
-      "source": "/api/requests",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, s-maxage=3600, stale-while-revalidate=86400"
-        }
-      ]
-    },
     {
       "source": "/(.*)",
       "headers": [
