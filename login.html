@@ -96,6 +96,7 @@
         <span id="toast-message">操作成功</span>
     </div>
 
+    <script src="js/config.js"></script>
     <script>
         // 简单的本地存储版本，不需要 Supabase
         function showToast(message, type = 'success') {
@@ -169,11 +170,8 @@
 
                 // 本地验证失败，尝试云端验证
                 try {
-                    const cloudResponse = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(username) + ')', {
-                        headers: {
-                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-                        }
+                    const cloudResponse = await fetch(APP_CONFIG.getApiUrl('users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(username) + ')'), {
+                        headers: APP_CONFIG.getApiHeaders()
                     });
 
                     if (cloudResponse.ok) {

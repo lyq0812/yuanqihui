@@ -1,4 +1,4 @@
-/* 园企汇 - 主业务逻辑 v9 */
+/* 园企汇 - 主业务逻辑 v9.1 */
 
 var currentUser = null;
 
@@ -194,14 +194,9 @@ async function loadHomePage() {
 // 保存求租信息到云端
 async function submitRentWantedRequest(request) {
     try {
-        var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests', {
+        var response = await fetch(APP_CONFIG.getApiUrl('requests'), {
             method: 'POST',
-            headers: {
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            },
+            headers: APP_CONFIG.getApiHeaders(),
             body: JSON.stringify(request)
         });
         
@@ -274,14 +269,9 @@ function toggleFavorite(listingId) {
 // 保存房源信息到云端
 async function submitPropertyRequest(property) {
     try {
-        var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties', {
+        var response = await fetch(APP_CONFIG.getApiUrl('properties'), {
             method: 'POST',
-            headers: {
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            },
+            headers: APP_CONFIG.getApiHeaders(),
             body: JSON.stringify(property)
         });
         

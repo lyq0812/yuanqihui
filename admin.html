@@ -287,6 +287,7 @@
         <span id="toast-message">操作成功</span>
     </div>
 
+    <script src="js/config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
@@ -356,36 +357,142 @@
             });
         }
 
-        // 获取数据
-        function getListings() {
-            const data = localStorage.getItem('yqh_listings');
-            return data ? JSON.parse(data) : [];
+        // 获取数据 - 从云端获取
+        async function getListingsFromCloud() {
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('properties?select=*'), {
+                    headers: APP_CONFIG.getApiHeaders()
+                });
+                const data = await response.json();
+                return data || [];
+            } catch (e) {
+                console.error('获取云端房源失败:', e);
+                return [];
+            }
         }
 
-        function getWantedList() {
-            const data = localStorage.getItem('yqh_rent_wanted');
-            return data ? JSON.parse(data) : [];
+        async function getWantedListFromCloud() {
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('requests?select=*'), {
+                    headers: APP_CONFIG.getApiHeaders()
+                });
+                const data = await response.json();
+                return data || [];
+            } catch (e) {
+                console.error('获取云端求租失败:', e);
+                return [];
+            }
         }
 
-        function getUsers() {
-            const data = localStorage.getItem('yqh_users');
-            return data ? JSON.parse(data) : [];
+        async function getUsersFromCloud() {
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('users?select=*'), {
+                    headers: APP_CONFIG.getApiHeaders()
+                });
+                const data = await response.json();
+                return data || [];
+            } catch (e) {
+                console.error('获取云端用户失败:', e);
+                return [];
+            }
+        }
+
+        // 管理员操作 - 更新云端状态
+        async function updateListingStatusCloud(id, status) {
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id), {
+                    method: 'PATCH',
+                    headers: APP_CONFIG.getApiHeaders(),
+                    body: JSON.stringify({ status: status })
+                });
+                return response.ok;
+            } catch (e) {
+                console.error('更新房源状态失败:', e);
+                return false;
+            }
+        }
+
+        async function deleteListingCloud(id) {
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id), {
+                    method: 'DELETE',
+                    headers: APP_CONFIG.getApiHeaders()
+                });
+                return response.ok;
+            } catch (e) {
+                console.error('删除云端房源失败:', e);
+                return false;
+            }
+        }
+
+        async function updateWantedStatusCloud(id, status) {
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id), {
+                    method: 'PATCH',
+                    headers: APP_CONFIG.getApiHeaders(),
+                    body: JSON.stringify({ status: status })
+                });
+                return response.ok;
+            } catch (e) {
+                console.error('更新求租状态失败:', e);
+                return false;
+            }
+        }
+
+        async function deleteWantedCloud(id) {
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id), {
+                    method: 'DELETE',
+                    headers: APP_CONFIG.getApiHeaders()
+                });
+                return response.ok;
+            } catch (e) {
+                console.error('删除云端求租失败:', e);
+                return false;
+            }
+        }
+
+        async function updateUserRoleCloud(id, role) {
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('users?id=eq.' + id), {
+                    method: 'PATCH',
+                    headers: APP_CONFIG.getApiHeaders(),
+                    body: JSON.stringify({ role: role })
+                });
+                return response.ok;
+            } catch (e) {
+                console.error('更新用户角色失败:', e);
+                return false;
+            }
+        }
+
+        // 兼容旧版本的获取函数（现在从云端获取）
+        async function getListings() {
+            return await getListingsFromCloud();
+        }
+
+        async function getWantedList() {
+            return await getWantedListFromCloud();
+        }
+
+        async function getUsers() {
+            return await getUsersFromCloud();
         }
 
         // 房源管理
         let listingsTab = 'all';
         let listingsKeyword = '';
 
-        function updateListingsStats() {
-            const listings = getListings();
+        async function updateListingsStats() {
+            const listings = await getListings();
             document.getElementById('stat-total').textContent = listings.length;
             document.getElementById('stat-pending').textContent = listings.filter(l => l.status === 'pending').length;
             document.getElementById('stat-approved').textContent = listings.filter(l => l.status === 'approved').length;
             document.getElementById('stat-rejected').textContent = listings.filter(l => l.status === 'rejected').length;
         }
 
-        function renderListingsTable() {
-            let listings = getListings();
+        async function renderListingsTable() {
+            let listings = await getListings();
             
             if (listingsTab === 'pending') listings = listings.filter(l => l.status === 'pending');
             else if (listingsTab === 'approved') listings = listings.filter(l => l.status === 'approved');
@@ -427,40 +534,48 @@
             `).join('');
         }
 
-        function approveListing(id) {
-            const listings = getListings();
+        async function approveListing(id) {
+            const listings = await getListings();
             const index = listings.findIndex(l => l.id === id);
             if (index !== -1) {
-                listings[index].status = 'approved';
-                localStorage.setItem('yqh_listings', JSON.stringify(listings));
-                showToast('审核通过');
-                updateListingsStats();
-                renderListingsTable();
-            }
-        }
-
-        function rejectListing(id) {
-            if (confirm('确定拒绝此房源吗？')) {
-                const listings = getListings();
-                const index = listings.findIndex(l => l.id === id);
-                if (index !== -1) {
-                    listings[index].status = 'rejected';
-                    localStorage.setItem('yqh_listings', JSON.stringify(listings));
-                    showToast('已拒绝');
+                const success = await updateListingStatusCloud(id, 'approved');
+                if (success) {
+                    showToast('审核通过');
                     updateListingsStats();
                     renderListingsTable();
+                } else {
+                    showToast('操作失败', 'error');
                 }
             }
         }
 
-        function deleteListingConfirm(id) {
+        async function rejectListing(id) {
+            if (confirm('确定拒绝此房源吗？')) {
+                const listings = await getListings();
+                const index = listings.findIndex(l => l.id === id);
+                if (index !== -1) {
+                    const success = await updateListingStatusCloud(id, 'rejected');
+                    if (success) {
+                        showToast('已拒绝');
+                        updateListingsStats();
+                        renderListingsTable();
+                    } else {
+                        showToast('操作失败', 'error');
+                    }
+                }
+            }
+        }
+
+        async function deleteListingConfirm(id) {
             if (confirm('确定删除此房源吗？此操作不可恢复。')) {
-                let listings = getListings();
-                listings = listings.filter(l => l.id !== id);
-                localStorage.setItem('yqh_listings', JSON.stringify(listings));
-                showToast('删除成功');
-                updateListingsStats();
-                renderListingsTable();
+                const success = await deleteListingCloud(id);
+                if (success) {
+                    showToast('删除成功');
+                    updateListingsStats();
+                    renderListingsTable();
+                } else {
+                    showToast('删除失败', 'error');
+                }
             }
         }
 
@@ -468,16 +583,16 @@
         let wantedTab = 'all';
         let wantedKeyword = '';
 
-        function updateWantedStats() {
-            const wanted = getWantedList();
+        async function updateWantedStats() {
+            const wanted = await getWantedList();
             document.getElementById('wanted-stat-total').textContent = wanted.length;
             document.getElementById('wanted-stat-pending').textContent = wanted.filter(w => w.status === 'pending').length;
             document.getElementById('wanted-stat-approved').textContent = wanted.filter(w => w.status === 'approved').length;
             document.getElementById('wanted-stat-rejected').textContent = wanted.filter(w => w.status === 'rejected').length;
         }
 
-        function renderWantedTable() {
-            let wanted = getWantedList();
+        async function renderWantedTable() {
+            let wanted = await getWantedList();
             
             if (wantedTab === 'pending') wanted = wanted.filter(w => w.status === 'pending');
             else if (wantedTab === 'approved') wanted = wanted.filter(w => w.status === 'approved');
@@ -519,53 +634,61 @@
             `).join('');
         }
 
-        function approveWanted(id) {
-            const wanted = getWantedList();
+        async function approveWanted(id) {
+            const wanted = await getWantedList();
             const index = wanted.findIndex(w => w.id == id);
             if (index !== -1) {
-                wanted[index].status = 'approved';
-                localStorage.setItem('yqh_rent_wanted', JSON.stringify(wanted));
-                showToast('审核通过');
-                updateWantedStats();
-                renderWantedTable();
-            }
-        }
-
-        function rejectWanted(id) {
-            if (confirm('确定拒绝此求租信息吗？')) {
-                const wanted = getWantedList();
-                const index = wanted.findIndex(w => w.id == id);
-                if (index !== -1) {
-                    wanted[index].status = 'rejected';
-                    localStorage.setItem('yqh_rent_wanted', JSON.stringify(wanted));
-                    showToast('已拒绝');
+                const success = await updateWantedStatusCloud(id, 'approved');
+                if (success) {
+                    showToast('审核通过');
                     updateWantedStats();
                     renderWantedTable();
+                } else {
+                    showToast('操作失败', 'error');
                 }
             }
         }
 
-        function deleteWantedConfirm(id) {
+        async function rejectWanted(id) {
+            if (confirm('确定拒绝此求租信息吗？')) {
+                const wanted = await getWantedList();
+                const index = wanted.findIndex(w => w.id == id);
+                if (index !== -1) {
+                    const success = await updateWantedStatusCloud(id, 'rejected');
+                    if (success) {
+                        showToast('已拒绝');
+                        updateWantedStats();
+                        renderWantedTable();
+                    } else {
+                        showToast('操作失败', 'error');
+                    }
+                }
+            }
+        }
+
+        async function deleteWantedConfirm(id) {
             if (confirm('确定删除此求租信息吗？此操作不可恢复。')) {
-                let wanted = getWantedList();
-                wanted = wanted.filter(w => w.id != id);
-                localStorage.setItem('yqh_rent_wanted', JSON.stringify(wanted));
-                showToast('删除成功');
-                updateWantedStats();
-                renderWantedTable();
+                const success = await deleteWantedCloud(id);
+                if (success) {
+                    showToast('删除成功');
+                    updateWantedStats();
+                    renderWantedTable();
+                } else {
+                    showToast('删除失败', 'error');
+                }
             }
         }
 
         // 用户管理
-        function updateUserStats() {
-            const users = getUsers();
+        async function updateUserStats() {
+            const users = await getUsers();
             document.getElementById('user-stat-total').textContent = users.length;
             document.getElementById('user-stat-active').textContent = users.filter(u => u.role !== 'disabled').length;
             document.getElementById('user-stat-admin').textContent = users.filter(u => u.role === 'admin').length;
         }
 
-        function renderUsersTable() {
-            let users = getUsers();
+        async function renderUsersTable() {
+            let users = await getUsers();
             const keyword = document.getElementById('user-search-keyword').value;
             
             if (keyword) {
@@ -599,16 +722,15 @@
             `).join('');
         }
 
-        function toggleUserRole(id) {
+        async function toggleUserRole(id) {
             if (confirm('确定将此用户设为管理员吗？')) {
-                const users = getUsers();
-                const index = users.findIndex(u => u.id === id);
-                if (index !== -1) {
-                    users[index].role = 'admin';
-                    localStorage.setItem('yqh_users', JSON.stringify(users));
+                const success = await updateUserRoleCloud(id, 'admin');
+                if (success) {
                     showToast('已将用户设为管理员');
                     updateUserStats();
                     renderUsersTable();
+                } else {
+                    showToast('操作失败', 'error');
                 }
             }
         }
@@ -726,12 +848,14 @@
 
         // 初始化
         if (checkAdminAuth()) {
-            updateListingsStats();
-            renderListingsTable();
-            updateWantedStats();
-            renderWantedTable();
-            updateUserStats();
-            renderUsersTable();
+            (async function() {
+                await updateListingsStats();
+                await renderListingsTable();
+                await updateWantedStats();
+                await renderWantedTable();
+                await updateUserStats();
+                await renderUsersTable();
+            })();
         }
     </script>
 </body>

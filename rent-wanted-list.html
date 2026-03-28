@@ -381,6 +381,7 @@
     </div>
 
 
+    <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
      <script src="js/main.js"></script>
@@ -649,17 +650,21 @@
             updateWantedLoadMoreVisibility();
         }
 
-        // 从云端获取已批准的求租
+        // 从云端获取已批准的求租 - 使用缓存
         async function getApprovedWantedFromDB() {
+            var cached = getRequestsCache();
+            if (cached && Array.isArray(cached)) {
+                return cached;
+            }
             try {
-                const response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?select=*&status=eq.approved&order=created_at.desc', {
-                    headers: {
-                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-                    }
+                const response = await fetch(APP_CONFIG.getApiUrl('requests?select=*&status=eq.approved&order=created_at.desc'), {
+                    headers: APP_CONFIG.getApiHeaders()
                 });
                 const data = await response.json();
                 console.log('从云端获取到求租信息:', data?.length || 0, '条');
+                if (data && Array.isArray(data)) {
+                    setRequestsCache(data);
+                }
                 return data || [];
             } catch (err) {
                 console.log('从云端获取求租信息异常:', err);
@@ -681,7 +686,7 @@
             // 如果有数据，清除加载提示
             if (wanted.length > 0) {
                 const container = document.getElementById('wanted-list');
-                if (container && container.querySelector('#debug-info')) {
+                if (container) {
                     container.innerHTML = '';
                 }
             }
@@ -757,22 +762,43 @@
         // 分页获取求租数据
         function getWantedPaginated(page, pageSize) {
             var offset = (page - 1) * pageSize;
-            var url = 'https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?select=*&status=eq.approved&order=created_at.desc&limit=' + pageSize + '&offset=' + offset;
+            var url = APP_CONFIG.getApiUrl('requests?select=*&status=eq.approved&order=created_at.desc&limit=' + pageSize + '&offset=' + offset);
             return fetch(url, {
-                headers: {
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-                }
+                headers: APP_CONFIG.getApiHeaders()
             }).then(function(response) { return response.json(); });
         }
 
-        // 获取求租总数
+        // 获取求租总数 - 使用缓存
+        var requestsCacheKey = 'yqh_requests_cache';
+        var requestsCacheExpiry = 5 * 60 * 1000;
+
+        function getRequestsCache() {
+            try {
+                var cached = localStorage.getItem(requestsCacheKey);
+                if (!cached) return null;
+                var cacheData = JSON.parse(cached);
+                if (!cacheData || !cacheData.data || !cacheData.timestamp) return null;
+                if (Date.now() - cacheData.timestamp > requestsCacheExpiry) return null;
+                return cacheData.data;
+            } catch(e) { return null; }
+        }
+
+        function setRequestsCache(data) {
+            try {
+                localStorage.setItem(requestsCacheKey, JSON.stringify({
+                    data: data,
+                    timestamp: Date.now()
+                }));
+            } catch(e) {}
+        }
+
         function getWantedCount() {
-            return fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?status=eq.approved&select=id', {
-                headers: {
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-                }
+            var cached = getRequestsCache();
+            if (cached && Array.isArray(cached)) {
+                return Promise.resolve(cached.length);
+            }
+            return fetch(APP_CONFIG.getApiUrl('requests?status=eq.approved&select=id'), {
+                headers: APP_CONFIG.getApiHeaders()
             }).then(function(response) { return response.json(); })
               .then(function(data) { return data ? data.length : 0; });
         }
@@ -782,12 +808,14 @@
             initFilters();
             loadWantedData();
 
-            // 每30秒自动刷新
-            setInterval(function() {
-                wantedCurrentPage = 1;
-                wantedAllData = [];
-                loadWantedData();
-            }, 30000);
+            // 智能刷新：页面可见性变化时刷新，避免无谓的请求
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    wantedCurrentPage = 1;
+                    wantedAllData = [];
+                    loadWantedData();
+                }
+            });
             
             // 移动端菜单
             const menuBtn = document.getElementById('mobile-menu-btn');

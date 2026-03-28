@@ -165,7 +165,9 @@
         <span id="toast-message">操作成功</span>
     </div>
 
+    <script src="js/config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <script>
         // 用户状态检查
@@ -203,21 +205,45 @@
             return urlParams.get(name);
         }
         
-        // 从云端获取求租数据
+        // 从云端获取求租数据 - 使用缓存
         async function getApprovedWantedFromDB() {
+            var cached = getCache('yqh_requests_cache');
+            if (cached && Array.isArray(cached)) {
+                return cached;
+            }
             try {
-                var response = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/requests?select=*', {
-                    headers: {
-                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-                    }
+                var response = await fetch(APP_CONFIG.getApiUrl('requests?select=*'), {
+                    headers: APP_CONFIG.getApiHeaders()
                 });
                 var data = await response.json();
+                if (data && Array.isArray(data)) {
+                    setCache('yqh_requests_cache', data);
+                }
                 return data || [];
             } catch (err) {
                 console.log('获取云端求租失败:', err);
                 return [];
             }
+        }
+
+        function setCache(cacheKey, data) {
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    data: data,
+                    timestamp: Date.now()
+                }));
+            } catch(e) {}
+        }
+
+        function getCache(cacheKey) {
+            try {
+                var cached = localStorage.getItem(cacheKey);
+                if (!cached) return null;
+                var cacheData = JSON.parse(cached);
+                if (!cacheData || !cacheData.data || !cacheData.timestamp) return null;
+                if (Date.now() - cacheData.timestamp > 5 * 60 * 1000) return null;
+                return cacheData.data;
+            } catch(e) { return null; }
         }
         
         // 获取求租列表

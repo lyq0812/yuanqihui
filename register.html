@@ -107,6 +107,7 @@
         <span id="toast-message">操作成功</span>
     </div>
 
+    <script src="js/config.js"></script>
     <script>
         // 简单的本地存储版本，不需要 Supabase
         function showToast(message, type = 'success') {
@@ -160,11 +161,8 @@
 
                 // 同时检查云端是否已存在
                 try {
-                    const cloudResponse = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(phone) + ')', {
-                        headers: {
-                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-                        }
+                    const cloudResponse = await fetch(APP_CONFIG.getApiUrl('users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(phone) + ')'), {
+                        headers: APP_CONFIG.getApiHeaders()
                     });
                     if (cloudResponse.ok) {
                         const cloudUsers = await cloudResponse.json();
@@ -201,14 +199,9 @@
 
                 // 保存到云端
                 try {
-                    await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users', {
+                    await fetch(APP_CONFIG.getApiUrl('users'), {
                         method: 'POST',
-                        headers: {
-                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=representation'
-                        },
+                        headers: APP_CONFIG.getApiHeaders(),
                         body: JSON.stringify(newUser)
                     });
                 } catch (cloudErr) {

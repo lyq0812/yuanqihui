@@ -1,6 +1,48 @@
-// 园企汇 - 统一登录系统 v6.0
+// 园企汇 - 统一登录系统 v6.2 (性能优化版)
 
 (function() {
+    // 确保配置文件已加载
+    if (typeof window.APP_CONFIG === 'undefined') {
+        console.error('配置文件未加载，请在HTML中先引入config.js');
+    }
+
+    // ========== 缓存配置 ==========
+    var LISTINGS_CACHE_KEY = 'yqh_listings_cache';
+    var REQUESTS_CACHE_KEY = 'yqh_requests_cache';
+    var CACHE_EXPIRY = 5 * 60 * 1000; // 5分钟缓存
+
+    function getCache(cacheKey) {
+        try {
+            var cached = localStorage.getItem(cacheKey);
+            if (!cached) return null;
+            var cacheData = JSON.parse(cached);
+            if (!cacheData || !cacheData.data || !cacheData.timestamp) return null;
+            if (Date.now() - cacheData.timestamp > CACHE_EXPIRY) return null;
+            return cacheData.data;
+        } catch(e) { return null; }
+    }
+
+    function setCache(cacheKey, data) {
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                data: data,
+                timestamp: Date.now()
+            }));
+        } catch(e) {}
+    }
+
+    function clearListingsCache() {
+        localStorage.removeItem(LISTINGS_CACHE_KEY);
+    }
+
+    function clearRequestsCache() {
+        localStorage.removeItem(REQUESTS_CACHE_KEY);
+    }
+
+    // 暴露缓存清理函数（数据更新时调用）
+    window.clearListingsCache = clearListingsCache;
+    window.clearRequestsCache = clearRequestsCache;
+
     // 初始化
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
@@ -67,7 +109,9 @@
         var modal = document.getElementById('auth-modal');
         if (modal) modal.style.display = 'flex';
     };
-    
+
+    window.showLoginModal = window.showAuthModal;
+
     window.closeAuthModal = function() {
         var modal = document.getElementById('auth-modal');
         if (modal) modal.style.display = 'none';
@@ -122,11 +166,8 @@
         }
         
         try {
-            var cloudResponse = await fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(username) + ')', {
-                headers: {
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-                }
+            var cloudResponse = await fetch(APP_CONFIG.getApiUrl('users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(username) + ')'), {
+                headers: APP_CONFIG.getApiHeaders()
             });
             
             if (cloudResponse.ok) {
@@ -213,14 +254,9 @@
         localStorage.setItem('yqh_users', JSON.stringify(users));
         localStorage.setItem('yqh_user', JSON.stringify(newUser));
         
-        fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/users', {
+        fetch(APP_CONFIG.getApiUrl('users'), {
             method: 'POST',
-            headers: {
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            },
+            headers: APP_CONFIG.getApiHeaders(),
             body: JSON.stringify(newUser)
         }).catch(function(e) { console.error('保存到云端失败', e); });
         
@@ -240,22 +276,51 @@
         });
     }
 
-    // 数据获取函数 - 只返回云端已批准的数据
-    window.getApprovedListings = function() {
-        return fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=*&status=eq.approved&order=created_at.desc', {
-            headers: {
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
+    // 数据获取函数 - 带缓存优化
+    window.getApprovedListings = function(options) {
+        options = options || {};
+        var useCache = options.useCache !== false;
+        var forceRefresh = options.forceRefresh === true;
+
+        if (useCache && !forceRefresh) {
+            var cached = getCache(LISTINGS_CACHE_KEY);
+            if (cached && Array.isArray(cached)) {
+                return Promise.resolve(cached);
             }
+        }
+
+        return fetch(APP_CONFIG.getApiUrl('properties?select=*&status=eq.approved&order=created_at.desc'), {
+            headers: APP_CONFIG.getApiHeaders()
         })
         .then(function(response) { return response.json(); })
         .then(function(dbListings) {
-            return dbListings || [];
+            var result = dbListings || [];
+            if (useCache && result.length > 0) {
+                setCache(LISTINGS_CACHE_KEY, result);
+            }
+            return result;
         })
         .catch(function(error) {
             console.error('获取云端数据失败', error);
-            return [];
+            var cached = getCache(LISTINGS_CACHE_KEY);
+            return cached || [];
         });
+    };
+
+    // 获取单条房源详情（不重复调用全量接口）
+    window.getListingById = function(id) {
+        if (!id) return Promise.resolve(null);
+        var cached = getCache(LISTINGS_CACHE_KEY);
+        if (cached && Array.isArray(cached)) {
+            var found = cached.find(function(l) { return l.id == id; });
+            if (found) return Promise.resolve(found);
+        }
+        return fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id + '&select=*'), {
+            headers: APP_CONFIG.getApiHeaders()
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) { return data && data.length > 0 ? data[0] : null; })
+        .catch(function(error) { return null; });
     };
 
     // 分页获取房源数据 - 优化版本
@@ -264,12 +329,9 @@
         var offset = (page - 1) * pageSize;
         // 确保包含created_at用于排序
         var selectFields = fields.includes('created_at') ? fields : fields + ',created_at';
-        var url = 'https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?select=' + selectFields + '&status=eq.approved&order=created_at.desc&limit=' + pageSize + '&offset=' + offset;
+        var url = APP_CONFIG.getApiUrl('properties?select=' + selectFields + '&status=eq.approved&order=created_at.desc&limit=' + pageSize + '&offset=' + offset);
         return fetch(url, {
-            headers: {
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-            }
+            headers: APP_CONFIG.getApiHeaders()
         })
         .then(function(response) { return response.json(); })
         .then(function(data) { return data || []; })
@@ -279,13 +341,14 @@
         });
     };
 
-    // 获取总数
+    // 获取总数 - 优化版，使用缓存
     window.getListingsCount = function() {
-        return fetch('https://tysrmpssxrdjgrubkltj.supabase.co/rest/v1/properties?status=eq.approved&select=id', {
-            headers: {
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc'
-            }
+        var cached = getCache(LISTINGS_CACHE_KEY);
+        if (cached && Array.isArray(cached)) {
+            return Promise.resolve(cached.length);
+        }
+        return fetch(APP_CONFIG.getApiUrl('properties?status=eq.approved&select=id'), {
+            headers: APP_CONFIG.getApiHeaders()
         })
         .then(function(response) { return response.json(); })
         .then(function(data) {
@@ -313,5 +376,36 @@
     window.getUrlParam = function(name) {
         var url = new URL(window.location.href);
         return url.searchParams.get(name) || '';
+    };
+
+    // 获取求租信息 - 带缓存
+    window.getApprovedRequests = function(options) {
+        options = options || {};
+        var useCache = options.useCache !== false;
+        var forceRefresh = options.forceRefresh === true;
+
+        if (useCache && !forceRefresh) {
+            var cached = getCache(REQUESTS_CACHE_KEY);
+            if (cached && Array.isArray(cached)) {
+                return Promise.resolve(cached);
+            }
+        }
+
+        return fetch(APP_CONFIG.getApiUrl('requests?select=*&status=eq.approved&order=created_at.desc'), {
+            headers: APP_CONFIG.getApiHeaders()
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            var result = data || [];
+            if (useCache && result.length > 0) {
+                setCache(REQUESTS_CACHE_KEY, result);
+            }
+            return result;
+        })
+        .catch(function(error) {
+            console.error('获取求租信息失败', error);
+            var cached = getCache(REQUESTS_CACHE_KEY);
+            return cached || [];
+        });
     };
 })();

@@ -166,7 +166,6 @@
     <!-- Listings Section -->
     <section class="listings-section">
         <div class="container">
-            <div id="debug-info" style="display:none;"></div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                 <span id="result-count" style="color: var(--gray-600); font-size: 1rem;">共找到 <strong style="color: var(--primary);">0</strong> 条房源</span>
                 <select id="sort-order" style="padding: 0.625rem 1.25rem; border: 2px solid var(--gray-200); border-radius: var(--radius-lg); font-size: 0.9375rem; outline: none; cursor: pointer;">
@@ -247,53 +246,10 @@
         <span id="toast-message">操作成功</span>
     </div>
 
-    <!-- Auth Modal -->
-    <div class="modal-overlay" id="auth-modal">
-        <div class="modal" style="max-width:400px;">
-            <div style="text-align:center;margin-bottom:1rem;">
-                <i class="fas fa-user-circle" style="font-size:3rem;color:var(--primary);"></i>
-            </div>
-            <h3 style="text-align:center;">用户登录</h3>
-            <form id="login-form" style="margin-top:1.5rem;" onsubmit="return false;">
-                <div class="form-group">
-                    <label>用户名 / 手机号</label>
-                    <input type="text" id="login-username" placeholder="请输入用户名或手机号">
-                </div>
-                <div class="form-group">
-                    <label>密码</label>
-                    <input type="password" id="login-password" placeholder="请输入密码">
-                </div>
-                <button type="button" class="btn-submit" style="width:100%;margin-top:1rem;" onclick="doLogin()">登录</button>
-            </form>
-            <form id="register-form" style="margin-top:1.5rem;display:none;" onsubmit="return false;">
-                <div class="form-group">
-                    <label>用户名</label>
-                    <input type="text" id="reg-username" placeholder="请设置用户名（4-20个字符）">
-                </div>
-                <div class="form-group">
-                    <label>手机号码</label>
-                    <input type="tel" id="reg-phone" placeholder="请输入11位手机号码">
-                </div>
-                <div class="form-group">
-                    <label>密码</label>
-                    <input type="password" id="reg-password" placeholder="请设置登录密码（6-20个字符）">
-                </div>
-                <div class="form-group">
-                    <label>确认密码</label>
-                    <input type="password" id="reg-confirm-password" placeholder="请再次输入密码">
-                </div>
-                <button type="button" class="btn-submit" style="width:100%;margin-top:1rem;" onclick="doRegister()">注册</button>
-            </form>
-            <p style="text-align:center;margin-top:1rem;">
-                <a href="#" onclick="showRegister();return false;" style="color:var(--primary);">立即注册</a> &nbsp;|&nbsp; <a href="#" onclick="showLogin();return false;" style="color:var(--gray-500);">返回登录</a>
-            </p>
-            <button onclick="closeAuthModal()" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-400);">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    </div>
 
 
+
+    <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/main.js"></script>
@@ -437,20 +393,12 @@
         
         // 刷新房源列表
         async function refreshListings() {
-            document.getElementById('debug-info').innerHTML = 'refreshListings 被调用，正在从云端获取数据...';
-
-            // 从云端获取数据
             const allListings = await getApprovedListings();
-            document.getElementById('debug-info').innerHTML = 'refreshListings 房源数量: ' + allListings.length + ' - 准备排序';
-
-            // 触发筛选应用（直接使用云端数据，不缓存）
             applyFiltersWithData(allListings);
         }
 
         // 应用筛选（使用传入的云端数据）
         function applyFiltersWithData(allListings) {
-            document.getElementById('debug-info').innerHTML = 'applyFilters 房源数量: ' + allListings.length + ' - 准备排序';
-
             const region = document.getElementById('filter-region').value;
             const area = document.getElementById('filter-area').value;
             const type = document.getElementById('filter-type').value;
@@ -466,26 +414,20 @@
             }
             
             filteredListings = localFilterListings(allListings, filters);
-            
-            document.getElementById('debug-info').innerHTML = 'applyFilters 筛选后: ' + filteredListings.length + ' - 准备排序';
-            
+
             // 排序
             if (sort === 'price-asc') filteredListings.sort((a, b) => a.price - b.price);
             else if (sort === 'price-desc') filteredListings.sort((a, b) => b.price - a.price);
             else if (sort === 'area-asc') filteredListings.sort((a, b) => a.area - b.area);
             else filteredListings.sort((a, b) => (b.created_at || b.timestamp) - (a.created_at || a.timestamp));
-            
-            document.getElementById('debug-info').innerHTML = 'applyFilters 排序后: ' + filteredListings.length + ' - 准备渲染';
-            
+
             currentPage = 1;
             renderPage();
         }
-        
+
         // 渲染分页
         function renderPage() {
             try {
-                document.getElementById('debug-info').innerHTML = 'renderPage 数据: ' + filteredListings.length;
-                
                 const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
                 const start = (currentPage - 1) * itemsPerPage;
                 const end = start + itemsPerPage;
@@ -508,7 +450,7 @@
                 }
                 document.getElementById('pagination').innerHTML = paginationHtml;
             } catch(e) {
-                document.getElementById('debug-info').innerHTML = 'renderPage错误: ' + e.message;
+                console.error('渲染页面错误:', e);
             }
         }
         
@@ -583,12 +525,14 @@
 
             checkUserStatus();
 
-            // 每30秒自动刷新一次
-            setInterval(function() {
-                listingsCurrentPage = 1;
-                listingsAllData = [];
-                loadListingsData();
-            }, 30000);
+            // 智能刷新：页面可见性变化时刷新，避免无谓的请求
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    listingsCurrentPage = 1;
+                    listingsAllData = [];
+                    loadListingsData();
+                }
+            });
         }
 
         // 加载列表数据

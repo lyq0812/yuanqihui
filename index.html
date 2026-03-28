@@ -257,49 +257,7 @@
         </div>
     </section>
 
-    <!-- Auth Modal -->
-    <div id="auth-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-        <div style="background:white;padding:30px;border-radius:10px;width:90%;max-width:400px;position:relative;">
-            <button onclick="closeAuthModal()" style="position:absolute;top:10px;right:15px;background:none;border:none;font-size:1.5rem;cursor:pointer;">×</button>
-            <div style="text-align:center;margin-bottom:1rem;">
-                <i class="fas fa-user-circle" style="font-size:3rem;color:#4F46E5;"></i>
-            </div>
-            <h3 style="text-align:center;">用户登录</h3>
-            <form id="login-form" style="margin-top:1.5rem;" onsubmit="return false;">
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:0.5rem;font-weight:600;">用户名 / 手机号</label>
-                    <input type="text" id="login-username" style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;" placeholder="请输入用户名或手机号">
-                </div>
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:0.5rem;font-weight:600;">密码</label>
-                    <input type="password" id="login-password" style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;" placeholder="请输入密码">
-                </div>
-                <button type="button" onclick="doLogin()" style="width:100%;padding:0.75rem;background:#4F46E5;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">登录</button>
-            </form>
-            <form id="register-form" style="margin-top:1.5rem;display:none;" onsubmit="return false;">
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:0.5rem;font-weight:600;">用户名</label>
-                    <input type="text" id="reg-username" style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;" placeholder="请设置用户名（4-20个字符）">
-                </div>
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:0.5rem;font-weight:600;">手机号码</label>
-                    <input type="tel" id="reg-phone" style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;" placeholder="请输入11位手机号码">
-                </div>
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:0.5rem;font-weight:600;">密码</label>
-                    <input type="password" id="reg-password" style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;" placeholder="请设置登录密码（6-20个字符）">
-                </div>
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:0.5rem;font-weight:600;">确认密码</label>
-                    <input type="password" id="reg-confirm-password" style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;" placeholder="请再次输入密码">
-                </div>
-                <button type="button" onclick="doRegister()" style="width:100%;padding:0.75rem;background:#4F46E5;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">注册</button>
-            </form>
-            <p style="text-align:center;margin-top:1rem;">
-                <a href="#" onclick="showRegister();return false;" style="color:#4F46E5;">立即注册</a> &nbsp;|&nbsp; <a href="#" onclick="showLogin();return false;" style="color:#6b7280;">返回登录</a>
-            </p>
-        </div>
-    </div>
+
 
     <!-- Footer -->
     <footer class="footer">
@@ -361,6 +319,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/main.js"></script>
