@@ -278,8 +278,8 @@
         users.push(newUser);
         localStorage.setItem('yqh_users', JSON.stringify(users));
         localStorage.setItem('yqh_user', JSON.stringify(newUser));
-        
-        fetch(APP_CONFIG.getApiUrl('users'), {
+
+        fetch(APP_CONFIG.getApiUrl('users', 'POST'), {
             method: 'POST',
             headers: APP_CONFIG.getApiHeaders(),
             body: JSON.stringify(newUser)
@@ -319,11 +319,18 @@
         if (useCache && !forceRefresh) {
             var cached = getCache(LISTINGS_CACHE_KEY);
             if (cached && Array.isArray(cached)) {
-                // 异步触发后台更新
-                if (silentUpdate && !isBackgroundRefreshing) {
-                    silentBackgroundUpdate(options.onUpdate);
+                // 检查缓存是否有 contact 字段（旧缓存可能没有）
+                var hasContactField = cached.length > 0 && cached[0].hasOwnProperty('contact');
+                if (!hasContactField && cached.length > 0) {
+                    // 缓存数据不完整，忽略缓存，强制刷新
+                    cached = null;
+                } else {
+                    // 异步触发后台更新
+                    if (silentUpdate && !isBackgroundRefreshing) {
+                        silentBackgroundUpdate(options.onUpdate);
+                    }
+                    return Promise.resolve(cached);
                 }
-                return Promise.resolve(cached);
             }
         }
 

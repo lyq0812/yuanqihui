@@ -413,7 +413,7 @@
             window.submitPropertyToDB = async function(property) {
                 console.log('发送的数据:', JSON.stringify(property));
                 try {
-                    var response = await fetch(APP_CONFIG.getApiUrl('properties'), {
+                    var response = await fetch(APP_CONFIG.getApiUrl('properties', 'POST'), {
                         method: 'POST',
                         headers: APP_CONFIG.getApiHeaders(),
                         body: JSON.stringify(property)
@@ -429,6 +429,7 @@
                         }
                         return true;
                     } else {
+                        console.error('保存失败，状态:', response.status, '数据:', data);
                         toast.show('保存失败，请重试', 'error');
                         return false;
                     }

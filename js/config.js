@@ -23,22 +23,27 @@ window.APP_CONFIG = {
         };
     },
 
-    // 获取完整API URL - 优先使用Vercel Edge API
-    getApiUrl: function(endpoint) {
-        // 检测是否在浏览器环境
+    // 获取完整API URL
+    // method: 'GET' | 'POST' | 'PATCH' | 'DELETE'
+    // 注意：POST/PATCH/DELETE 直接走 Supabase（Edge Functions 只支持 GET）
+    getApiUrl: function(endpoint, method) {
+        method = method || 'GET';
+
+        // POST/PATCH/DELETE 直接使用 Supabase
+        if (method !== 'GET') {
+            return this.SUPABASE_URL + '/rest/v1/' + endpoint;
+        }
+
+        // GET 请求：优先使用 Vercel Edge API
         if (typeof window !== 'undefined') {
-            // 获取当前域名，自动判断是否使用Edge API
             var currentHost = window.location.hostname;
             var isVercel = currentHost.includes('vercel.app') || currentHost === 'yuanqihui.icu' || currentHost === 'www.yuanqihui.icu';
 
-            // 如果部署在Vercel，使用Edge API
             if (isVercel) {
-                // 解析endpoint参数
                 var parts = endpoint.split('?');
                 var base = parts[0];
                 var query = parts.length > 1 ? parts[1] : '';
 
-                // 解析query string
                 var params = {};
                 if (query) {
                     query.split('&').forEach(function(pair) {
@@ -49,10 +54,8 @@ window.APP_CONFIG = {
                     });
                 }
 
-                // properties 映射到 Edge API
                 if (base.indexOf('properties') === 0) {
                     var edgeParams = [];
-                    // 分页参数
                     if (params.limit) {
                         edgeParams.push('pageSize=' + params.limit);
                         delete params.limit;
@@ -62,12 +65,10 @@ window.APP_CONFIG = {
                         edgeParams.push('page=' + page);
                         delete params.offset;
                     }
-                    // 地区筛选
                     if (params.region && params.region.indexOf('eq.') === 0) {
                         edgeParams.push('region=' + params.region.replace('eq.', ''));
                         delete params.region;
                     }
-                    // 其他参数透传
                     for (var key in params) {
                         if (params.hasOwnProperty(key)) {
                             edgeParams.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
@@ -76,7 +77,6 @@ window.APP_CONFIG = {
                     return '/api/listings' + (edgeParams.length > 0 ? '?' + edgeParams.join('&') : '');
                 }
 
-                // requests 映射到 Edge API
                 if (base.indexOf('requests') === 0) {
                     var edgeParams = [];
                     if (params.limit) {
@@ -97,7 +97,6 @@ window.APP_CONFIG = {
                 }
             }
         }
-        // 默认使用Supabase直接调用
         return this.SUPABASE_URL + '/rest/v1/' + endpoint;
     }
 };

@@ -194,7 +194,7 @@ async function loadHomePage() {
 // 保存求租信息到云端
 async function submitRentWantedRequest(request) {
     try {
-        var response = await fetch(APP_CONFIG.getApiUrl('requests'), {
+        var response = await fetch(APP_CONFIG.getApiUrl('requests', 'POST'), {
             method: 'POST',
             headers: APP_CONFIG.getApiHeaders(),
             body: JSON.stringify(request)

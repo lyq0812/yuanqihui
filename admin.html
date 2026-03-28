@@ -400,7 +400,7 @@
         // 管理员操作 - 更新云端状态
         async function updateListingStatusCloud(id, status) {
             try {
-                const response = await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id), {
+                const response = await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id, 'PATCH'), {
                     method: 'PATCH',
                     headers: APP_CONFIG.getApiHeaders(),
                     body: JSON.stringify({ status: status })
@@ -414,7 +414,7 @@
 
         async function deleteListingCloud(id) {
             try {
-                const response = await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id), {
+                const response = await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id, 'DELETE'), {
                     method: 'DELETE',
                     headers: APP_CONFIG.getApiHeaders()
                 });
@@ -427,7 +427,7 @@
 
         async function updateWantedStatusCloud(id, status) {
             try {
-                const response = await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id), {
+                const response = await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id, 'PATCH'), {
                     method: 'PATCH',
                     headers: APP_CONFIG.getApiHeaders(),
                     body: JSON.stringify({ status: status })
@@ -441,7 +441,7 @@
 
         async function deleteWantedCloud(id) {
             try {
-                const response = await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id), {
+                const response = await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id, 'DELETE'), {
                     method: 'DELETE',
                     headers: APP_CONFIG.getApiHeaders()
                 });
@@ -454,7 +454,7 @@
 
         async function updateUserRoleCloud(id, role) {
             try {
-                const response = await fetch(APP_CONFIG.getApiUrl('users?id=eq.' + id), {
+                const response = await fetch(APP_CONFIG.getApiUrl('users?id=eq.' + id, 'PATCH'), {
                     method: 'PATCH',
                     headers: APP_CONFIG.getApiHeaders(),
                     body: JSON.stringify({ role: role })

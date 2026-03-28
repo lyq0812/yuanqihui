@@ -407,13 +407,13 @@
             users.push(newUser);
             localStorage.setItem('yqh_users', JSON.stringify(users));
             localStorage.setItem('yqh_user', JSON.stringify(newUser));
-            
-            fetch(APP_CONFIG.getApiUrl('users'), {
+
+            fetch(APP_CONFIG.getApiUrl('users', 'POST'), {
                 method: 'POST',
                 headers: APP_CONFIG.getApiHeaders(),
                 body: JSON.stringify(newUser)
             }).catch(function(e) {});
-            
+
             alert('注册成功');
             closeAuthModal();
             window.location.reload();
@@ -580,15 +580,15 @@
             users.push(newUser);
             localStorage.setItem('yqh_users', JSON.stringify(users));
             localStorage.setItem('yqh_user', JSON.stringify(newUser));
-            
+
             try {
-                await fetch(APP_CONFIG.getApiUrl('users'), {
+                await fetch(APP_CONFIG.getApiUrl('users', 'POST'), {
                     method: 'POST',
                     headers: APP_CONFIG.getApiHeaders(),
                     body: JSON.stringify(newUser)
                 });
             } catch (e) {}
-            
+
             alert('注册成功');
             window.location.reload();
         }
@@ -801,7 +801,7 @@
             
             if (confirm('确定删除此房源吗？')) {
                 try {
-                    await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id), {
+                    await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id, 'DELETE'), {
                         method: 'DELETE',
                         headers: APP_CONFIG.getApiHeaders()
                     });
@@ -839,7 +839,7 @@
             
             if (confirm('确定删除此求租信息吗？')) {
                 try {
-                    await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id), {
+                    await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id, 'DELETE'), {
                         method: 'DELETE',
                         headers: APP_CONFIG.getApiHeaders()
                     });
