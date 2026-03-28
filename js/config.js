@@ -24,79 +24,10 @@ window.APP_CONFIG = {
     },
 
     // 获取完整API URL
-    // method: 'GET' | 'POST' | 'PATCH' | 'DELETE'
-    // 注意：POST/PATCH/DELETE 直接走 Supabase（Edge Functions 只支持 GET）
+    // 注意：为了避免 Vercel Edge 缓存问题，所有请求都直接走 Supabase
+    // Vercel Edge 缓存会导致数据不一致
     getApiUrl: function(endpoint, method) {
-        method = method || 'GET';
-
-        // POST/PATCH/DELETE 直接使用 Supabase
-        if (method !== 'GET') {
-            return this.SUPABASE_URL + '/rest/v1/' + endpoint;
-        }
-
-        // GET 请求：优先使用 Vercel Edge API
-        if (typeof window !== 'undefined') {
-            var currentHost = window.location.hostname;
-            var isVercel = currentHost.includes('vercel.app') || currentHost === 'yuanqihui.icu' || currentHost === 'www.yuanqihui.icu';
-
-            if (isVercel) {
-                var parts = endpoint.split('?');
-                var base = parts[0];
-                var query = parts.length > 1 ? parts[1] : '';
-
-                var params = {};
-                if (query) {
-                    query.split('&').forEach(function(pair) {
-                        var kv = pair.split('=');
-                        if (kv.length >= 1) {
-                            params[decodeURIComponent(kv[0])] = kv.length > 1 ? decodeURIComponent(kv[1]) : '';
-                        }
-                    });
-                }
-
-                if (base.indexOf('properties') === 0) {
-                    var edgeParams = [];
-                    if (params.limit) {
-                        edgeParams.push('pageSize=' + params.limit);
-                        delete params.limit;
-                    }
-                    if (params.offset) {
-                        var page = Math.floor(params.offset / (params.limit || 10)) + 1;
-                        edgeParams.push('page=' + page);
-                        delete params.offset;
-                    }
-                    if (params.region && params.region.indexOf('eq.') === 0) {
-                        edgeParams.push('region=' + params.region.replace('eq.', ''));
-                        delete params.region;
-                    }
-                    for (var key in params) {
-                        if (params.hasOwnProperty(key)) {
-                            edgeParams.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
-                        }
-                    }
-                    return '/api/listings' + (edgeParams.length > 0 ? '?' + edgeParams.join('&') : '');
-                }
-
-                if (base.indexOf('requests') === 0) {
-                    var edgeParams = [];
-                    if (params.limit) {
-                        edgeParams.push('pageSize=' + params.limit);
-                        delete params.limit;
-                    }
-                    if (params.offset) {
-                        var page = Math.floor(params.offset / (params.limit || 10)) + 1;
-                        edgeParams.push('page=' + page);
-                        delete params.offset;
-                    }
-                    for (var key in params) {
-                        if (params.hasOwnProperty(key)) {
-                            edgeParams.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
-                        }
-                    }
-                    return '/api/requests' + (edgeParams.length > 0 ? '?' + edgeParams.join('&') : '');
-                }
-            }
-        }
+        // 所有请求都直接走 Supabase，避免 Vercel Edge 缓存问题
         return this.SUPABASE_URL + '/rest/v1/' + endpoint;
     }
 };

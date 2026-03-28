@@ -466,7 +466,7 @@
                 }
 
                 var listing = {
-                    user_id: currentUser.user_id,
+                    user_id: currentUser.id,
                     title: title,
                     region: region,
                     area: area,
@@ -487,6 +487,13 @@
                         listing.images = [e.target.result];
                         window.submitPropertyToDB(listing).then(function(success) {
                             if (success) {
+                                // 保存到本地存储
+                                var localListings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+                                listing.id = listing.id || ('local_' + Date.now());
+                                listing.timestamp = Date.now();
+                                localListings.unshift(listing);
+                                localStorage.setItem('yqh_listings', JSON.stringify(localListings));
+
                                 toast.show('发布成功！', 'success');
                                 if (form) form.reset();
                                 setTimeout(function() {
@@ -502,6 +509,13 @@
                     listing.images = ['https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800'];
                     window.submitPropertyToDB(listing).then(function(success) {
                         if (success) {
+                            // 保存到本地存储
+                            var localListings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+                            listing.id = listing.id || ('local_' + Date.now());
+                            listing.timestamp = Date.now();
+                            localListings.unshift(listing);
+                            localStorage.setItem('yqh_listings', JSON.stringify(localListings));
+
                             toast.show('发布成功！', 'success');
                             if (form) form.reset();
                             setTimeout(function() {
