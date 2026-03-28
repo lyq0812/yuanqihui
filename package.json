@@ -1,0 +1,10 @@
+{
+  "name": "yuanqihui-website",
+  "version": "1.0.0",
+  "description": "园企汇厂房租售平台",
+  "scripts": {
+    "build": "echo 'Static site - no build required'"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

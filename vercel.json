@@ -1,7 +1,12 @@
 {
-  "buildCommand": "echo 'Static site'",
+  "buildCommand": "npm run build",
   "outputDirectory": ".",
   "framework": null,
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "headers": [
     {
       "source": "/api/listings",
@@ -33,16 +38,6 @@
           "value": "DENY"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/listings-api",
-      "destination": "/api/listings"
-    },
-    {
-      "source": "/requests-api",
-      "destination": "/api/requests"
     }
   ]
 }

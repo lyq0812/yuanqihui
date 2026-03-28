@@ -1,22 +1,19 @@
-import { NextResponse } from 'next/server';
-
 const SUPABASE_URL = 'https://tysrmpssxrdjgrubkltj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5c3JtcHNzeHJkamdydWJrbHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzUxNzAsImV4cCI6MjA4OTY1MTE3MH0.jMnnFGpwzdrd8caQlyMoSvmlOTNJYPjvLUq1l86zqOc';
 
 const LIST_FIELDS = 'id,title,region,area,price,images,status,created_at';
 
-export const config = {
-  runtime: 'edge',
-};
+module.exports = async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1');
-  const pageSize = parseInt(searchParams.get('pageSize') || '10');
-  const region = searchParams.get('region');
-  const offset = (page - 1) * pageSize;
+  const { page = '1', pageSize = '10', region = '' } = req.query;
+  const pageNum = parseInt(page);
+  const size = parseInt(pageSize);
+  const offset = (pageNum - 1) * size;
 
-  let url = `${SUPABASE_URL}/rest/v1/properties?select=${LIST_FIELDS}&status=eq.approved&order=created_at.desc&limit=${pageSize}&offset=${offset}`;
+  let url = `${SUPABASE_URL}/rest/v1/properties?select=${LIST_FIELDS}&status=eq.approved&order=created_at.desc&limit=${size}&offset=${offset}`;
 
   if (region && region !== '') {
     url += `&region=eq.${encodeURIComponent(region)}`;
@@ -32,24 +29,15 @@ export async function GET(request) {
     });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Failed to fetch' },
-        { status: response.status }
-      );
+      return res.status(response.status).json({ error: 'Failed to fetch' });
     }
 
     const data = await response.json();
 
-    return NextResponse.json(data, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-        'Content-Type': 'application/json',
-      },
-    });
+    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json(data);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
