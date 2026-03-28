@@ -399,30 +399,90 @@
         var homePageSize = 6;
         var homeTotalCount = 0;
         var homeAllListings = [];
+        var isRenderingFromCache = false;
 
-        // 渲染首页房源
+        // 渲染首页房源 - 极致优化版
         function renderHomeListings() {
-            // 显示骨架屏
             var container = document.getElementById('home-listings');
+
+            // 1. 先检查缓存是否有数据
+            var cached = (function() {
+                try {
+                    var c = localStorage.getItem('yqh_listings_cache');
+                    if (c) {
+                        var d = JSON.parse(c);
+                        if (d && d.data && Array.isArray(d.data)) return d.data;
+                    }
+                } catch(e) {}
+                return null;
+            })();
+
+            // 2. 如果有缓存，立即渲染（不显示骨架屏闪烁）
+            if (cached && cached.length > 0) {
+                isRenderingFromCache = true;
+                homeAllListings = cached.slice(0, homePageSize);
+                homeTotalCount = cached.length;
+                renderListingsGrid(homeAllListings, 'home-listings');
+                updateHomeLoadMoreVisibility();
+
+                // 后台静默更新
+                silentRefreshHomeData();
+                return;
+            }
+
+            // 3. 没有缓存，显示骨架屏 + 获取数据
             container.innerHTML = '<div class="skeleton-grid"><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div></div>';
 
-            // 获取总数
-            getListingsCount().then(function(count) {
-                homeTotalCount = count;
-                var loadMoreEl = document.getElementById('home-load-more');
-                if (loadMoreEl) {
-                    loadMoreEl.style.display = 'none';
-                }
-            });
+            getApprovedListings({ useCache: true, silentUpdate: true }).then(function(listings) {
+                homeTotalCount = listings.length;
+                homeAllListings = listings.slice(0, homePageSize);
+                renderListingsGrid(homeAllListings, 'home-listings');
+                updateHomeLoadMoreVisibility();
 
-            // 分页获取数据（只查询需要的字段）
-            getListingsPaginated('id,title,region,area,price,images,status,created_at', homeCurrentPage, homePageSize).then(function(listings) {
-                homeAllListings = listings;
-                renderListingsGrid(listings, 'home-listings');
+                // 预加载下一页
+                prefetchNextPage(1, homePageSize);
             }).catch(function(e) {
-                console.error('加载失败:', e);
                 container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h4>加载失败</h4><p>请刷新页面重试</p></div>';
             });
+        }
+
+        // 后台静默刷新数据
+        function silentRefreshHomeData() {
+            getApprovedListings({
+                useCache: true,
+                forceRefresh: true,
+                silentUpdate: false,
+                onUpdate: function(freshData) {
+                    if (freshData && freshData.length > 0 && !isRenderingFromCache) {
+                        return;
+                    }
+                    if (freshData && isRenderingFromCache) {
+                        var currentIds = homeAllListings.map(function(l) { return l.id; });
+                        var hasChange = freshData.slice(0, homePageSize).some(function(l) {
+                            return currentIds.indexOf(l.id) < 0;
+                        });
+                        if (hasChange) {
+                            homeTotalCount = freshData.length;
+                            homeAllListings = freshData.slice(0, homePageSize);
+                            renderListingsGrid(homeAllListings, 'home-listings');
+                            updateHomeLoadMoreVisibility();
+                        }
+                    }
+                    isRenderingFromCache = false;
+                }
+            });
+        }
+
+        // 更新加载更多按钮显示
+        function updateHomeLoadMoreVisibility() {
+            var loadMoreEl = document.getElementById('home-load-more');
+            if (loadMoreEl) {
+                if (homeAllListings.length >= homeTotalCount || homeTotalCount === 0) {
+                    loadMoreEl.style.display = 'none';
+                } else {
+                    loadMoreEl.style.display = 'block';
+                }
+            }
         }
 
         // 加载更多房源
@@ -439,46 +499,85 @@
 
             homeCurrentPage++;
 
-            getListingsPaginated('id,title,region,area,price,images,status,created_at', homeCurrentPage, homePageSize).then(function(listings) {
-                homeAllListings = homeAllListings.concat(listings);
-                renderListingsGrid(homeAllListings, 'home-listings');
+            // 先尝试预加载的下一页
+            getPrefetchedPage(homeCurrentPage).then(function(prefetched) {
+                if (prefetched && prefetched.length > 0) {
+                    homeAllListings = homeAllListings.concat(prefetched);
+                    renderListingsGrid(homeAllListings, 'home-listings');
+                    btn.disabled = false;
+                    btnText.textContent = '加载更多';
+                    spinner.style.display = 'none';
+                    updateHomeLoadMoreVisibility();
 
-                btn.disabled = false;
-                btnText.textContent = '加载更多';
-                spinner.style.display = 'none';
+                    // 预加载下下页
+                    prefetchNextPage(homeCurrentPage, homePageSize);
+                } else {
+                    // 没有预加载，正常请求
+                    getListingsPaginated('id,title,region,area,price,images,status,created_at', homeCurrentPage, homePageSize).then(function(listings) {
+                        homeAllListings = homeAllListings.concat(listings);
+                        renderListingsGrid(homeAllListings, 'home-listings');
 
-                // 检查是否还有更多数据
-                var loadMoreEl = document.getElementById('home-load-more');
-                if (loadMoreEl && homeAllListings.length >= homeTotalCount) {
-                    loadMoreEl.style.display = 'none';
+                        btn.disabled = false;
+                        btnText.textContent = '加载更多';
+                        spinner.style.display = 'none';
+                        updateHomeLoadMoreVisibility();
+
+                        // 预加载下一页
+                        prefetchNextPage(homeCurrentPage, homePageSize);
+                    }).catch(function(e) {
+                        homeCurrentPage--;
+                        btn.disabled = false;
+                        btnText.textContent = '加载更多';
+                        spinner.style.display = 'none';
+                    });
                 }
-            }).catch(function(e) {
-                console.error('加载更多失败:', e);
-                homeCurrentPage--;
-                btn.disabled = false;
-                btnText.textContent = '加载更多';
-                spinner.style.display = 'none';
-                alert('加载失败，请重试');
             });
         }
 
         // 地区筛选
-        document.querySelectorAll('.region-tab').forEach(tab => {
-            tab.addEventListener('click', async function() {
-                document.querySelectorAll('.region-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.region-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.region-tab').forEach(function(t) { t.classList.remove('active'); });
                 this.classList.add('active');
 
                 var container = document.getElementById('home-listings');
-                container.innerHTML = '<div class="skeleton-grid"><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div></div>';
-
                 var region = this.dataset.region;
+
+                // 缓存数据直接筛选
+                var cached = (function() {
+                    try {
+                        var c = localStorage.getItem('yqh_listings_cache');
+                        if (c) {
+                            var d = JSON.parse(c);
+                            if (d && d.data && Array.isArray(d.data)) return d.data;
+                        }
+                    } catch(e) {}
+                    return null;
+                })();
+
+                if (cached) {
+                    var listings = cached;
+                    if (region !== '全部') {
+                        listings = cached.filter(function(item) { return item.region === region; });
+                    }
+                    homeAllListings = listings.slice(0, homePageSize);
+                    homeTotalCount = listings.length;
+                    renderListingsGrid(homeAllListings, 'home-listings');
+                    document.getElementById('home-load-more').style.display = 'none';
+                    return;
+                }
+
+                // 没有缓存，显示骨架屏
+                container.innerHTML = '<div class="skeleton-grid"><div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-price"></div></div></div>';
+
                 getApprovedListings().then(function(cloudListings) {
                     var listings = cloudListings;
                     if (region !== '全部') {
                         listings = cloudListings.filter(function(item) { return item.region === region; });
                     }
-                    renderListingsGrid(listings, 'home-listings');
-                    // 地区筛选时隐藏加载更多
+                    homeAllListings = listings.slice(0, homePageSize);
+                    homeTotalCount = listings.length;
+                    renderListingsGrid(homeAllListings, 'home-listings');
                     document.getElementById('home-load-more').style.display = 'none';
                 });
             });

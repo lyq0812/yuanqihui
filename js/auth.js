@@ -1,4 +1,4 @@
-// 园企汇 - 统一登录系统 v6.2 (性能优化版)
+// 园企汇 - 统一登录系统 v7.0 (极致性能优化版)
 
 (function() {
     // 确保配置文件已加载
@@ -6,10 +6,11 @@
         console.error('配置文件未加载，请在HTML中先引入config.js');
     }
 
-    // ========== 缓存配置 ==========
+    // ========== 缓存配置 (1小时有效期) ==========
     var LISTINGS_CACHE_KEY = 'yqh_listings_cache';
     var REQUESTS_CACHE_KEY = 'yqh_requests_cache';
-    var CACHE_EXPIRY = 5 * 60 * 1000; // 5分钟缓存
+    var CACHE_EXPIRY = 60 * 60 * 1000; // 1小时缓存
+    var PREFETCH_CACHE_KEY = 'yqh_prefetch_cache';
 
     function getCache(cacheKey) {
         try {
@@ -31,17 +32,41 @@
         } catch(e) {}
     }
 
+    // 检查缓存是否过期
+    function isCacheExpired(cacheKey) {
+        try {
+            var cached = localStorage.getItem(cacheKey);
+            if (!cached) return true;
+            var cacheData = JSON.parse(cached);
+            if (!cacheData || !cacheData.timestamp) return true;
+            return Date.now() - cacheData.timestamp > CACHE_EXPIRY;
+        } catch(e) { return true; }
+    }
+
+    // 获取缓存时间戳
+    function getCacheTimestamp(cacheKey) {
+        try {
+            var cached = localStorage.getItem(cacheKey);
+            if (!cached) return 0;
+            var cacheData = JSON.parse(cached);
+            return cacheData && cacheData.timestamp ? cacheData.timestamp : 0;
+        } catch(e) { return 0; }
+    }
+
     function clearListingsCache() {
         localStorage.removeItem(LISTINGS_CACHE_KEY);
+        localStorage.removeItem(PREFETCH_CACHE_KEY);
     }
 
     function clearRequestsCache() {
         localStorage.removeItem(REQUESTS_CACHE_KEY);
     }
 
-    // 暴露缓存清理函数（数据更新时调用）
+    // 暴露缓存清理函数
     window.clearListingsCache = clearListingsCache;
     window.clearRequestsCache = clearRequestsCache;
+    window.isListingsCacheExpired = function() { return isCacheExpired(LISTINGS_CACHE_KEY); };
+    window.getListingsCacheTimestamp = function() { return getCacheTimestamp(LISTINGS_CACHE_KEY); };
 
     // 初始化
     if (document.readyState === 'loading') {
@@ -276,38 +301,73 @@
         });
     }
 
-    // 数据获取函数 - 带缓存优化
+    // 最小字段列表 - 列表页只需要这些
+    var LIST_MINIMAL_FIELDS = 'id,title,region,area,price,images,status,created_at';
+
+    // 后台静默更新标志
+    var isBackgroundRefreshing = false;
+
+    // 数据获取函数 - 极致优化版
+    // options: { useCache, forceRefresh, silentUpdate, onCacheHit, onUpdate }
     window.getApprovedListings = function(options) {
         options = options || {};
         var useCache = options.useCache !== false;
         var forceRefresh = options.forceRefresh === true;
+        var silentUpdate = options.silentUpdate !== false;
 
+        // 1. 先返回缓存（立即响应）
         if (useCache && !forceRefresh) {
             var cached = getCache(LISTINGS_CACHE_KEY);
             if (cached && Array.isArray(cached)) {
+                // 异步触发后台更新
+                if (silentUpdate && !isBackgroundRefreshing) {
+                    silentBackgroundUpdate(options.onUpdate);
+                }
                 return Promise.resolve(cached);
             }
         }
 
-        return fetch(APP_CONFIG.getApiUrl('properties?select=*&status=eq.approved&order=created_at.desc'), {
+        // 2. 没有缓存，发起真实请求
+        isBackgroundRefreshing = true;
+        return fetch(APP_CONFIG.getApiUrl('properties?select=' + LIST_MINIMAL_FIELDS + '&status=eq.approved&order=created_at.desc'), {
             headers: APP_CONFIG.getApiHeaders()
         })
         .then(function(response) { return response.json(); })
         .then(function(dbListings) {
             var result = dbListings || [];
+            isBackgroundRefreshing = false;
             if (useCache && result.length > 0) {
                 setCache(LISTINGS_CACHE_KEY, result);
             }
+            if (options.onUpdate) options.onUpdate(result);
             return result;
         })
         .catch(function(error) {
+            isBackgroundRefreshing = false;
             console.error('获取云端数据失败', error);
             var cached = getCache(LISTINGS_CACHE_KEY);
             return cached || [];
         });
     };
 
-    // 获取单条房源详情（不重复调用全量接口）
+    // 后台静默更新（不阻塞主线程）
+    function silentBackgroundUpdate(callback) {
+        if (isCacheExpired(LISTINGS_CACHE_KEY)) {
+            fetch(APP_CONFIG.getApiUrl('properties?select=' + LIST_MINIMAL_FIELDS + '&status=eq.approved&order=created_at.desc'), {
+                headers: APP_CONFIG.getApiHeaders()
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data && Array.isArray(data) && data.length > 0) {
+                    setCache(LISTINGS_CACHE_KEY, data);
+                    if (callback) callback(data);
+                }
+            })
+            .catch(function() {});
+        }
+    }
+
+    // 获取单条房源详情
     window.getListingById = function(id) {
         if (!id) return Promise.resolve(null);
         var cached = getCache(LISTINGS_CACHE_KEY);
@@ -323,12 +383,55 @@
         .catch(function(error) { return null; });
     };
 
+    // 预加载下一页数据
+    window.prefetchNextPage = function(currentPage, pageSize) {
+        var nextPage = currentPage + 1;
+        var offset = (nextPage - 1) * pageSize;
+        var url = APP_CONFIG.getApiUrl('properties?select=' + LIST_MINIMAL_FIELDS + '&status=eq.approved&order=created_at.desc&limit=' + pageSize + '&offset=' + offset);
+        return fetch(url, { headers: APP_CONFIG.getApiHeaders() })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data && Array.isArray(data)) {
+                setCache(PREFETCH_CACHE_KEY + '_' + nextPage, data);
+            }
+            return data || [];
+        })
+        .catch(function() { return []; });
+    };
+
+    // 获取预加载的下一页数据
+    window.getPrefetchedPage = function(page) {
+        try {
+            var cached = localStorage.getItem(PREFETCH_CACHE_KEY + '_' + page);
+            if (cached) {
+                var data = JSON.parse(cached);
+                if (data && data.data) return Promise.resolve(data.data);
+            }
+        } catch(e) {}
+        return Promise.resolve([]);
+    };
+
     // 分页获取房源数据 - 优化版本
-    // fields: 要查询的字段，page: 页码(1开始), pageSize: 每页条数
     window.getListingsPaginated = function(fields, page, pageSize) {
+        // 先检查预加载缓存
+        var prefetched = window.getPrefetchedPage(page);
+        if (prefetched && prefetched.length > 0) {
+            return Promise.resolve(prefetched);
+        }
+
         var offset = (page - 1) * pageSize;
-        // 确保包含created_at用于排序
-        var selectFields = fields.includes('created_at') ? fields : fields + ',created_at';
+        var selectFields = LIST_MINIMAL_FIELDS;
+        if (fields && fields !== '*') {
+            var requestedFields = fields.split(',');
+            var minimalFields = LIST_MINIMAL_FIELDS.split(',');
+            var merged = {};
+            requestedFields.forEach(function(f) {
+                if (minimalFields.indexOf(f) >= 0 || f === 'id') {
+                    merged[f] = true;
+                }
+            });
+            selectFields = Object.keys(merged).join(',');
+        }
         var url = APP_CONFIG.getApiUrl('properties?select=' + selectFields + '&status=eq.approved&order=created_at.desc&limit=' + pageSize + '&offset=' + offset);
         return fetch(url, {
             headers: APP_CONFIG.getApiHeaders()
