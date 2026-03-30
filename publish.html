@@ -420,8 +420,14 @@
                     });
                     console.log('响应状态:', response.status);
 
-                    var data = await response.json();
-                    console.log('响应数据:', data);
+                    var data;
+                    try {
+                        data = await response.json();
+                        console.log('响应数据:', data);
+                    } catch (e) {
+                        console.log('JSON解析失败，但状态:', response.status);
+                        data = {};
+                    }
 
                     if (response.ok || response.status === 201) {
                         if (typeof clearListingsCache === 'function') {
