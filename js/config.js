@@ -12,10 +12,8 @@ window.APP_CONFIG = {
             var isLocalhost = currentHost === 'localhost' || currentHost === '127.0.0.1';
 
             if (isLocalhost) {
-                // 本地开发：使用 Vercel 本地服务器或 Supabase 作为后备
-                return 'https://yuanqihui.icu'; // 部署后替换为你的域名
+                return 'https://yuanqihui.icu';
             } else {
-                // 生产环境：使用当前域名
                 return window.location.origin;
             }
         }
@@ -24,7 +22,6 @@ window.APP_CONFIG = {
 
     // 获取完整API URL
     getApiUrl: function(endpoint, method) {
-        // 始终走 Vercel Serverless Functions
         return this.getApiBase() + '/api/' + endpoint;
     },
 
