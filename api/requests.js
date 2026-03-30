@@ -84,19 +84,21 @@ export async function POST(request) {
         const body = await request.json();
 
         const id = body.id || generateUUID();
-        const name = body.name || '';
-        const phone = body.phone || '';
-        const region = body.region || '';
+        const title = body.title || '';
+        const username = body.username || body.name || '';
+        const contact = body.contact || '';
+        const user_phone = body.user_phone || body.phone || '';
         const area = body.area || 0;
-        const budget = body.budget || 0;
+        const budget = body.budget || '0';
         const type = body.type || '';
+        const location = body.location || '';
         const description = body.description || '';
         const status = body.status || 'approved';
-        const user_id = body.user_id || '';
+        const images = body.images ? (Array.isArray(body.images) ? JSON.stringify(body.images) : body.images) : null;
 
         const result = await sql`
-            INSERT INTO requests (id, name, phone, region, area, budget, type, description, status, user_id)
-            VALUES (${id}, ${name}, ${phone}, ${region}, ${area}, ${budget}, ${type}, ${description}, ${status}, ${user_id})
+            INSERT INTO requests (id, title, username, contact, user_phone, area, budget, type, location, description, status, images)
+            VALUES (${id}, ${title}, ${username}, ${contact}, ${user_phone}, ${area}, ${budget}, ${type}, ${location}, ${description}, ${status}, ${images})
             RETURNING *
         `;
 
