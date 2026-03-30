@@ -7,24 +7,14 @@ export async function GET(request) {
         const url = new URL(request.url);
         const table = url.searchParams.get('table') || 'users';
 
-        let result;
         if (table === 'users') {
-            result = await sql`SELECT * FROM users LIMIT 5`;
-        } else if (table === 'properties') {
-            result = await sql`SELECT * FROM properties LIMIT 5`;
-        } else if (table === 'requests') {
-            result = await sql`SELECT * FROM requests LIMIT 5`;
-        } else {
-            return new Response(JSON.stringify({ error: 'Invalid table' }));
+            const result = await sql`
+                SELECT column_name FROM information_schema.columns WHERE table_name = 'users'
+            `;
+            return new Response(JSON.stringify({ schema: result }));
         }
 
-        return new Response(JSON.stringify({
-            table,
-            count: result.length,
-            data: result
-        }), {
-            headers: { 'Content-Type': 'application/json' }
-        });
+        return new Response(JSON.stringify({ error: 'Invalid table' }));
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
