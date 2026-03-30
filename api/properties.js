@@ -86,21 +86,25 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const body = await request.json();
-        console.log('POST /api/properties body:', JSON.stringify(body));
 
-        if (!body.id) {
-            body.id = generateUUID();
-        }
+        const id = body.id || generateUUID();
+        const title = body.title || '';
+        const region = body.region || '';
+        const area = body.area || 0;
+        const price = body.price || '0';
+        const type = body.type || '';
+        const location = body.location || '';
+        const description = body.description || '';
+        const images = body.images || '[]';
+        const status = body.status || 'approved';
+        const contact = body.contact || '';
+        const user_id = body.user_id || '';
 
-        const columns = Object.keys(body);
-        const values = Object.values(body);
-        const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
-
-        const query = `INSERT INTO properties (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`;
-        console.log('POST /api/properties query:', query);
-        console.log('POST /api/properties values:', values);
-
-        const result = await sql(query, values);
+        const result = await sql`
+            INSERT INTO properties (id, title, region, area, price, type, location, description, images, status, contact, user_id)
+            VALUES (${id}, ${title}, ${region}, ${area}, ${price}, ${type}, ${location}, ${description}, ${images}, ${status}, ${contact}, ${user_id})
+            RETURNING *
+        `;
 
         return new Response(JSON.stringify(result[0] || result), {
             status: 201,
@@ -108,7 +112,7 @@ export async function POST(request) {
         });
     } catch (error) {
         console.error('POST /api/properties error:', error.message);
-        return new Response(JSON.stringify({ error: error.message, detail: error.stack }), {
+        return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
