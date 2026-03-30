@@ -10,24 +10,8 @@ function parseFilters(queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
         if (key === 'select' || key === 'order' || key === 'limit' || key === 'offset' || key === 'page' || key === 'pageSize') continue;
 
-        if (key === 'id' && value) {
-            const idValue = value.startsWith('eq.') ? value.substring(3) : value;
-            filters.push(`id = $${paramIndex++}`);
-            params.push(idValue);
-        } else if (key === 'username' && value) {
-            const usernameValue = value.startsWith('eq.') ? value.substring(3) : value;
-            filters.push(`username = $${paramIndex++}`);
-            params.push(decodeURIComponent(usernameValue));
-        } else if (key === 'phone' && value) {
-            const phoneValue = value.startsWith('eq.') ? value.substring(3) : value;
-            filters.push(`phone = $${paramIndex++}`);
-            params.push(decodeURIComponent(phoneValue));
-        } else if (key === 'user_id' && value) {
-            const userIdValue = value.startsWith('eq.') ? value.substring(3) : value;
-            filters.push(`user_id = $${paramIndex++}`);
-            params.push(userIdValue);
-        } else if (key === 'or' && value) {
-            const orMatch = value.match(/or=\(([^)]+)\)/);
+        if (key === 'or' && value) {
+            const orMatch = value.match(/\(([^)]+)\)/);
             if (orMatch) {
                 const conditions = orMatch[1].split(',');
                 const orClauses = [];
@@ -44,6 +28,26 @@ function parseFilters(queryParams) {
                     filters.push(`(${orClauses.join(' OR ')})`);
                 }
             }
+        } else if (key === 'id' && value) {
+            const idValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`id = $${paramIndex++}`);
+            params.push(idValue);
+        } else if (key === 'username' && value) {
+            const usernameValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`username = $${paramIndex++}`);
+            params.push(decodeURIComponent(usernameValue));
+        } else if (key === 'phone' && value) {
+            const phoneValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`phone = $${paramIndex++}`);
+            params.push(decodeURIComponent(phoneValue));
+        } else if (key === 'user_id' && value) {
+            const userIdValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`user_id = $${paramIndex++}`);
+            params.push(userIdValue);
+        } else if (key === 'status' && value) {
+            const statusValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`status = $${paramIndex++}`);
+            params.push(statusValue);
         }
     }
 
@@ -56,6 +60,7 @@ export async function GET(request) {
         const select = url.searchParams.get('select') || '*';
         const limit = parseInt(url.searchParams.get('limit')) || 100;
         const offset = parseInt(url.searchParams.get('offset')) || 0;
+        const order = url.searchParams.get('order');
 
         const { filters, params } = parseFilters(Object.fromEntries(url.searchParams));
 
@@ -63,7 +68,16 @@ export async function GET(request) {
         if (filters.length > 0) {
             query += ` WHERE ${filters.join(' AND ')}`;
         }
-        query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+        if (order) {
+            const orders = order.split(',').map(o => {
+                const parts = o.trim().split('.');
+                const field = parts[0];
+                const direction = parts[1] || 'DESC';
+                return `${field} ${direction.toUpperCase()}`;
+            });
+            query += ` ORDER BY ${orders.join(', ')}`;
+        }
+        query += ` LIMIT ${limit} OFFSET ${offset}`;
 
         const result = await sql(query, params);
 
