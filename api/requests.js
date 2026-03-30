@@ -83,22 +83,29 @@ export async function POST(request) {
     try {
         const body = await request.json();
 
-        if (!body.id) {
-            body.id = generateUUID();
-        }
+        const id = body.id || generateUUID();
+        const name = body.name || '';
+        const phone = body.phone || '';
+        const region = body.region || '';
+        const area = body.area || 0;
+        const budget = body.budget || 0;
+        const type = body.type || '';
+        const description = body.description || '';
+        const status = body.status || 'approved';
+        const user_id = body.user_id || '';
 
-        const columns = Object.keys(body);
-        const values = Object.values(body);
-        const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
-
-        const query = `INSERT INTO requests (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`;
-        const result = await sql(query, values);
+        const result = await sql`
+            INSERT INTO requests (id, name, phone, region, area, budget, type, description, status, user_id)
+            VALUES (${id}, ${name}, ${phone}, ${region}, ${area}, ${budget}, ${type}, ${description}, ${status}, ${user_id})
+            RETURNING *
+        `;
 
         return new Response(JSON.stringify(result[0] || result), {
             status: 201,
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
+        console.error('POST /api/requests error:', error.message);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
