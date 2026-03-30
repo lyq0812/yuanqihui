@@ -38,8 +38,12 @@ function parseFilters(queryParams) {
             }
         } else if (key === 'id' && value) {
             const idValue = value.startsWith('eq.') ? value.substring(3) : value;
-            filters.push(`id = $${paramIndex++}`);
+            filters.push(`user_id = $${paramIndex++}`);
             params.push(idValue);
+        } else if (key === 'user_id' && value) {
+            const userIdValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`user_id = $${paramIndex++}`);
+            params.push(userIdValue);
         } else if (key === 'username' && value) {
             const usernameValue = value.startsWith('eq.') ? value.substring(3) : value;
             filters.push(`username = $${paramIndex++}`);
@@ -48,14 +52,6 @@ function parseFilters(queryParams) {
             const phoneValue = value.startsWith('eq.') ? value.substring(3) : value;
             filters.push(`phone = $${paramIndex++}`);
             params.push(decodeURIComponent(phoneValue));
-        } else if (key === 'user_id' && value) {
-            const userIdValue = value.startsWith('eq.') ? value.substring(3) : value;
-            filters.push(`user_id = $${paramIndex++}`);
-            params.push(userIdValue);
-        } else if (key === 'status' && value) {
-            const statusValue = value.startsWith('eq.') ? value.substring(3) : value;
-            filters.push(`status = $${paramIndex++}`);
-            params.push(statusValue);
         }
     }
 
@@ -94,16 +90,15 @@ export async function POST(request) {
     try {
         const body = await request.json();
 
-        const id = body.id || body.user_id || generateUUID();
+        const user_id = body.user_id || generateUUID();
         const username = body.username || '';
         const phone = body.phone || '';
         const password = body.password || '';
-        const role = body.role || 'user';
         const created_at = body.created_at || new Date().toISOString();
 
         const result = await sql`
-            INSERT INTO users (id, username, phone, password, role, created_at)
-            VALUES (${id}, ${username}, ${phone}, ${password}, ${role}, ${created_at})
+            INSERT INTO users (user_id, username, phone, password, created_at)
+            VALUES (${user_id}, ${username}, ${phone}, ${password}, ${created_at})
             RETURNING *
         `;
 
@@ -123,23 +118,23 @@ export async function POST(request) {
 export async function PATCH(request) {
     try {
         const url = new URL(request.url);
-        const id = url.searchParams.get('id')?.replace('eq.', '');
+        const user_id = url.searchParams.get('user_id')?.replace('eq.', '') || url.searchParams.get('id')?.replace('eq.', '');
         const body = await request.json();
 
-        if (!id) {
-            return new Response(JSON.stringify({ error: 'ID is required' }), {
+        if (!user_id) {
+            return new Response(JSON.stringify({ error: 'User ID is required' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
         const updates = Object.entries(body)
-            .filter(([key]) => key !== 'id')
+            .filter(([key]) => key !== 'user_id' && key !== 'id')
             .map(([key, _], i) => `${key} = $${i + 2}`)
             .join(', ');
 
-        const query = `UPDATE users SET ${updates} WHERE id = $1 RETURNING *`;
-        const values = [id, ...Object.entries(body).filter(([key]) => key !== 'id').map(([_, val]) => val)];
+        const query = `UPDATE users SET ${updates} WHERE user_id = $1 RETURNING *`;
+        const values = [user_id, ...Object.entries(body).filter(([key]) => key !== 'user_id' && key !== 'id').map(([_, val]) => val)];
         const result = await sql(query, values);
 
         return new Response(JSON.stringify(result[0] || result), {
