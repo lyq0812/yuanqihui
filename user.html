@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>用户中心 - 园企汇陕西厂房出租网</title>
+    <meta name="description" content="园企汇用户中心，管理发布的厂房房源和求租信息。">
+    <meta name="keywords" content="用户中心,厂房管理,我的发布">
+    <meta name="author" content="园企汇">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://lyq0812.github.io/yuanqihui/user.html">
+    <meta property="og:title" content="用户中心 - 园企汇">
+    <meta property="og:description" content="园企汇用户中心，管理发布的厂房房源和求租信息。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lyq0812.github.io/yuanqihui/user.html">
+    <meta property="og:locale" content="zh_CN">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top">
+            <div class="container">
+                <!-- Desktop: 显示平台名称和工作时间 -->
+                <span class="desktop-only"><i class="fas fa-map-marker-alt"></i> 陕西厂房出租信息平台</span>
+                <span class="desktop-only" style="float: right;"><i class="fas fa-phone-alt"></i> 24小时热线: 13379308568</span>
+
+                <!-- Mobile: 平台名称、热线和菜单按钮 -->
+                <div class="mobile-header-left">
+                    <div class="mobile-logo-icon"><i class="fas fa-industry"></i></div>
+                    <div class="mobile-header-text">
+                        <span class="mobile-platform-name">陕西厂房出租信息平台</span>
+                        <span class="mobile-hotline"><i class="fas fa-phone-alt"></i> 24小时热线: 13379308568</span>
+                    </div>
+                </div>
+                <a href="user.html" class="mobile-login-btn"><i class="fas fa-user"></i> 登录</a>
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                    <span>菜单</span>
+                </button>
+            </div>
+        </div>
+        <div class="header-main">
+            <div class="container">
+                <div class="header-content">
+                    <a href="index.html" class="logo">
+                        <div class="logo-icon">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <div class="logo-text">
+                            <h1>园企汇</h1>
+                            <span>陕西厂房仓库出租网</span>
+                        </div>
+                    </a>
+                    
+                    <nav class="nav-menu">
+                        <a href="index.html"><i class="fas fa-home"></i> 首页</a>
+                        <a href="listings.html"><i class="fas fa-building"></i> 房源信息</a>
+                        <a href="rent-wanted-list.html"><i class="fas fa-search"></i> 求租信息</a>
+                        <a href="publish.html"><i class="fas fa-plus-circle"></i> 发布房源</a>
+                        <a href="rent-wanted-publish.html"><i class="fas fa-handshake"></i> 发布求租</a>
+                        <a href="user.html" id="user-center-link"><i class="fas fa-user-circle"></i> <span id="user-name-display">用户中心</span></a>
+                        <a href="#" onclick="showLoginModal(); return false;" id="login-link"><i class="fas fa-sign-in-alt"></i> 登录/注册</a>
+                        <a href="#" onclick="logout(); return false;" style="color: #ef4444; display: none;" id="logout-link"><i class="fas fa-sign-out-alt"></i> 退出</a>
+                    </nav>
+                    
+                    <a href="tel:13379308568" class="hotline-btn">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>13379308568</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+    <div class="mobile-nav" id="mobile-nav">
+        <div class="mobile-nav-header">
+            <h3><i class="fas fa-bars"></i> 导航菜单</h3>
+            <button class="mobile-nav-close" id="mobile-nav-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-home"></i> 首页</a></li>
+            <li><a href="listings.html"><i class="fas fa-building"></i> 厂房房源</a></li>
+            <li><a href="publish.html"><i class="fas fa-plus-circle"></i> 发布厂房</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> 联系我们</a></li>
+            <li><a href="admin.html"><i class="fas fa-cog"></i> 管理后台</a></li>
+            <li style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                <a href="tel:13379308568" style="color: #ef4444; font-weight: 700;">
+                    <i class="fas fa-phone-alt"></i> 13379308568
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <main class="main-content" style="min-height: 60vh; padding: 2rem 0;">
+        <div class="container">
+            <div class="user-center" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+                <div class="user-header" style="text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                    <h2 style="font-size: 1.5rem; color: var(--gray-800); margin-bottom: 0.5rem;"><i class="fas fa-user-circle" style="color: var(--primary);"></i> 用户中心</h2>
+                </div>
+                
+                <!-- 已登录用户 -->
+                <div id="user-info" style="display: none;">
+                    <div class="user-info-card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; margin-bottom: 2rem;">
+                        <div class="user-avatar" style="width: 64px; height: 64px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-details" style="flex: 1;">
+                            <h3 id="user-name-display" style="font-size: 1.25rem; margin-bottom: 0.25rem;">用户名</h3>
+                            <p id="user-phone-display" style="opacity: 0.9; font-size: 0.9rem;">手机号</p>
+                        </div>
+                        <button class="btn-logout" id="logout-btn" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border: none; border-radius: 6px; color: white; cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i> 退出
+                        </button>
+                    </div>
+                    
+                    <div class="tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #eee;">
+                        <button class="tab-btn active" data-tab="listings" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 0.95rem; color: var(--gray-600); border-bottom: 2px solid var(--primary); margin-bottom: -2px;">
+                            <i class="fas fa-building"></i> 我的房源
+                        </button>
+                        <button class="tab-btn" data-tab="wanted" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 0.95rem; color: var(--gray-600);">
+                            <i class="fas fa-search"></i> 我的求租
+                        </button>
+                        <button class="tab-btn" data-tab="favorites" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 0.95rem; color: var(--gray-600);">
+                            <i class="fas fa-heart"></i> 收藏
+                        </button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <div class="tab-pane" id="listings-tab" style="display: block;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                                <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-building" style="color: #667eea;"></i> 我的房源</h3>
+                                <a href="publish.html" class="btn-call" style="padding: 0.5rem 1rem; font-size: 0.9rem;"><i class="fas fa-plus"></i> 发布新房源</a>
+                            </div>
+                            <div id="my-listings"></div>
+                        </div>
+                        
+                        <div class="tab-pane" id="wanted-tab" style="display: none;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                                <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-search" style="color: #667eea;"></i> 我的求租</h3>
+                                <a href="rent-wanted-publish.html" class="btn-call" style="padding: 0.5rem 1rem; font-size: 0.9rem;"><i class="fas fa-plus"></i> 发布求租</a>
+                            </div>
+                            <div id="my-wanted"></div>
+                        </div>
+                        
+                        <div class="tab-pane" id="favorites-tab" style="display: none;">
+                            <div class="section-header" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                                <h3 style="font-size: 1.1rem; color: #333;"><i class="fas fa-heart" style="color: #667eea;"></i> 我的收藏</h3>
+                            </div>
+                            <div id="my-favorites"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 未登录提示 -->
+                <div id="guest-info" class="auth-prompt" style="text-align: center; padding: 3rem 1rem;">
+                    <i class="fas fa-user-circle" style="font-size: 4rem; color: #ddd; margin-bottom: 1rem;"></i>
+                    <p style="font-size: 1.1rem; color: #666; margin-bottom: 1.5rem;">请先登录或注册账号</p>
+                    <button class="btn-call" id="guest-login-btn" style="display: inline-flex;" onclick="showLoginModal()">
+                        <i class="fas fa-sign-in-alt"></i> 立即登录
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 登录弹窗 -->
+    <div id="auth-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:white;padding:30px;border-radius:10px;width:90%;max-width:380px;position:relative;">
+            <button onclick="closeAuthModal()" style="position:absolute;top:10px;right:15px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#999;">×</button>
+            <div style="text-align:center;margin-bottom:1.5rem;">
+                <i class="fas fa-user-circle" style="font-size:3rem;color:#4F46E5;"></i>
+                <h3 id="auth-title" style="margin:10px 0 0 0;">用户登录</h3>
+            </div>
+            <div id="login-form-content">
+                <form onsubmit="return handleLogin(event);">
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">用户名 / 手机号</label>
+                        <input type="text" id="login-username" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;font-size:1rem;" placeholder="请输入用户名或手机号" required>
+                    </div>
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">密码</label>
+                        <input type="password" id="login-password" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;font-size:1rem;" placeholder="请输入密码" required>
+                    </div>
+                    <button type="submit" style="width:100%;padding:14px;background:#4F46E5;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600;">登 录</button>
+                </form>
+                <p style="text-align:center;margin-top:1rem;color:#666;">还没有账号？<a href="#" onclick="showRegister();return false;" style="color:#4F46E5;text-decoration:none;font-weight:600;">立即注册</a></p>
+            </div>
+            <div id="register-form-content" style="display:none;">
+                <form onsubmit="return handleRegister(event);">
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">用户名</label>
+                        <input type="text" id="reg-username" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;font-size:1rem;" placeholder="请设置用户名（4-20个字符）" required minlength="4" maxlength="20">
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">手机号码</label>
+                        <input type="tel" id="reg-phone" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;font-size:1rem;" placeholder="请输入11位手机号码" required>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">密码</label>
+                        <input type="password" id="reg-password" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;font-size:1rem;" placeholder="请设置登录密码（6-20个字符）" required minlength="6">
+                    </div>
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">确认密码</label>
+                        <input type="password" id="reg-confirm-password" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;box-sizing:border-box;font-size:1rem;" placeholder="请再次输入密码" required>
+                    </div>
+                    <button type="submit" style="width:100%;padding:14px;background:#4F46E5;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600;">注 册</button>
+                </form>
+                <p style="text-align:center;margin-top:1rem;color:#666;">已有账号？<a href="#" onclick="showLogin();return false;" style="color:#4F46E5;text-decoration:none;font-weight:600;">立即登录</a></p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 园企汇 · 陕西厂房出租平台 · 客服热线：13379308568</p>
+        </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // 登录弹窗函数
+        function showLoginModal() {
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+        
+        function closeAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+        }
+        
+        function showLogin() {
+            document.getElementById('login-form-content').style.display = 'block';
+            document.getElementById('register-form-content').style.display = 'none';
+            document.getElementById('auth-title').textContent = '用户登录';
+        }
+        
+        function showRegister() {
+            document.getElementById('login-form-content').style.display = 'none';
+            document.getElementById('register-form-content').style.display = 'block';
+            document.getElementById('auth-title').textContent = '用户注册';
+        }
+        
+        // 登录函数
+        async function handleLogin(e) {
+            e.preventDefault();
+            var username = document.getElementById('login-username').value.trim();
+            var password = document.getElementById('login-password').value;
+            
+            if (!username || !password) {
+                alert('请填写用户名和密码');
+                return false;
+            }
+            
+            var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+            var user = users.find(function(u) { return u.username === username || u.phone === username; });
+            
+            if (user) {
+                if (user.password.length === 64) {
+                    try {
+                        if (await verifyPassword(password, user.password)) {
+                            localStorage.setItem('yqh_user', JSON.stringify(user));
+                            currentUser = user;
+                            alert('登录成功');
+                            closeAuthModal();
+                            document.getElementById('user-info').style.display = 'block';
+                            document.getElementById('guest-info').style.display = 'none';
+                            var nameDisplay = document.getElementById('user-name-display');
+                            if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                            var phoneDisplay = document.getElementById('user-phone-display');
+                            if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                            renderMyListings();
+                            renderMyWanted();
+                            return false;
+                        }
+                    } catch (e) {
+                        console.error('密码验证异常', e);
+                    }
+                } else if (user.password === password) {
+                    var hashed = await hashPassword(password);
+                    user.password = hashed;
+                    localStorage.setItem('yqh_users', JSON.stringify(users));
+                    localStorage.setItem('yqh_user', JSON.stringify(user));
+                    currentUser = user;
+                    alert('登录成功');
+                    closeAuthModal();
+                    document.getElementById('user-info').style.display = 'block';
+                    document.getElementById('guest-info').style.display = 'none';
+                    var nameDisplay = document.getElementById('user-name-display');
+                    if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                    var phoneDisplay = document.getElementById('user-phone-display');
+                    if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                    renderMyListings();
+                    renderMyWanted();
+                    return false;
+                }
+            }
+
+            // 本地验证失败，尝试云端验证
+            try {
+                var cloudResponse = await fetch(APP_CONFIG.getApiUrl('users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(username) + ')'), {
+                    headers: APP_CONFIG.getApiHeaders()
+                });
+
+                if (cloudResponse.ok) {
+                    var cloudUsers = await cloudResponse.json();
+                    if (cloudUsers && cloudUsers.length > 0) {
+                        var cloudUser = cloudUsers[0];
+                        if (cloudUser.password && cloudUser.password.length === 64) {
+                            if (await verifyPassword(password, cloudUser.password)) {
+                                users.push(cloudUser);
+                                localStorage.setItem('yqh_users', JSON.stringify(users));
+                                localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                                currentUser = cloudUser;
+                                alert('登录成功');
+                                closeAuthModal();
+                                document.getElementById('user-info').style.display = 'block';
+                                document.getElementById('guest-info').style.display = 'none';
+                                var nameDisplay = document.getElementById('user-name-display');
+                                if (nameDisplay) nameDisplay.textContent = cloudUser.username || cloudUser.phone;
+                                var phoneDisplay = document.getElementById('user-phone-display');
+                                if (phoneDisplay) phoneDisplay.textContent = cloudUser.phone || '';
+                                renderMyListings();
+                                renderMyWanted();
+                                return false;
+                            }
+                        } else if (cloudUser.password === password) {
+                            var hashed = await hashPassword(password);
+                            cloudUser.password = hashed;
+                            users.push(cloudUser);
+                            localStorage.setItem('yqh_users', JSON.stringify(users));
+                            localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                            currentUser = cloudUser;
+                            alert('登录成功');
+                            closeAuthModal();
+                            document.getElementById('user-info').style.display = 'block';
+                            document.getElementById('guest-info').style.display = 'none';
+                            var nameDisplay = document.getElementById('user-name-display');
+                            if (nameDisplay) nameDisplay.textContent = cloudUser.username || cloudUser.phone;
+                            var phoneDisplay = document.getElementById('user-phone-display');
+                            if (phoneDisplay) phoneDisplay.textContent = cloudUser.phone || '';
+                            renderMyListings();
+                            renderMyWanted();
+                            return false;
+                        }
+                    }
+                }
+            } catch (cloudErr) {
+                console.error('云端验证失败', cloudErr);
+            }
+
+            alert('用户名或密码错误');
+            return false;
+        }
+        
+        // 注册函数
+        async function handleRegister(e) {
+            e.preventDefault();
+            var username = document.getElementById('reg-username').value.trim();
+            var phone = document.getElementById('reg-phone').value.trim();
+            var password = document.getElementById('reg-password').value;
+            var confirmPassword = document.getElementById('reg-confirm-password').value;
+            
+            if (!username || username.length < 4) {
+                alert('用户名至少需要4个字符');
+                return false;
+            }
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                alert('请输入正确的手机号码');
+                return false;
+            }
+            if (!password || password.length < 6) {
+                alert('密码至少需要6个字符');
+                return false;
+            }
+            if (password !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                return false;
+            }
+            
+            var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+            var existingUser = users.find(function(u) { return u.username === username || u.phone === phone; });
+            if (existingUser) {
+                alert('用户名或手机号已被注册');
+                return false;
+            }
+            
+            var hashedPassword = await hashPassword(password);
+            
+            var newUser = {
+                id: 'usr_' + Date.now(),
+                username: username,
+                phone: phone,
+                password: hashedPassword,
+                role: 'user',
+                created_at: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('yqh_users', JSON.stringify(users));
+            localStorage.setItem('yqh_user', JSON.stringify(newUser));
+
+            fetch(APP_CONFIG.getApiUrl('users', 'POST'), {
+                method: 'POST',
+                headers: APP_CONFIG.getApiHeaders(),
+                body: JSON.stringify(newUser)
+            }).catch(function(e) {});
+
+            alert('注册成功');
+            closeAuthModal();
+            window.location.reload();
+            return false;
+        }
+        
+        function checkLogin() {
+            const session = localStorage.getItem('yqh_user');
+            const userInfo = document.getElementById('user-info');
+            const guestInfo = document.getElementById('guest-info');
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userPhoneDisplay = document.getElementById('user-phone-display');
+            
+            if (session) {
+                const user = JSON.parse(session);
+                currentUser = user;
+                userInfo.style.display = 'block';
+                guestInfo.style.display = 'none';
+                if (userNameDisplay) userNameDisplay.textContent = user.username || user.phone;
+                if (userPhoneDisplay) userPhoneDisplay.textContent = user.phone || '';
+                renderMyListings();
+                renderMyWanted();
+            } else {
+                userInfo.style.display = 'none';
+                guestInfo.style.display = 'flex';
+            }
+        }
+        
+        function checkUserStatus() {
+            const session = localStorage.getItem('yqh_user');
+            const userNameDisplay = document.getElementById('user-name-display');
+            const logoutLink = document.getElementById('logout-link');
+            const loginLink = document.getElementById('login-link');
+            const userCenterLink = document.getElementById('user-center-link');
+            const userWelcome = document.getElementById('user-welcome');
+            
+            if (session) {
+                const user = JSON.parse(session);
+                currentUser = user;
+                if (userNameDisplay) userNameDisplay.textContent = user.username || user.phone;
+                if (logoutLink) logoutLink.style.display = 'inline-flex';
+                if (loginLink) loginLink.style.display = 'none';
+                if (userCenterLink) userCenterLink.style.display = 'inline-flex';
+                if (userWelcome) userWelcome.textContent = '欢迎回来，' + (user.username || user.phone);
+            } else {
+                if (logoutLink) logoutLink.style.display = 'none';
+                if (loginLink) loginLink.style.display = 'inline-flex';
+                if (userWelcome) userWelcome.textContent = '登录后查看您的个人信息';
+            }
+        }
+        
+        // 登录弹窗函数 - 直接定义确保能用
+        function showAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+        
+        function closeAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // 登录函数
+        async function doLogin() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            if (!username || !password) {
+                alert('请填写用户名和密码');
+                return;
+            }
+            
+            let users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+            let user = users.find(u => u.username === username || u.phone === username);
+            
+            if (user) {
+                if (user.password.length === 64) {
+                    try {
+                        if (await verifyPassword(password, user.password)) {
+                            localStorage.setItem('yqh_user', JSON.stringify(user));
+                            currentUser = user;
+                            alert('登录成功');
+                            document.getElementById('user-info').style.display = 'block';
+                            document.getElementById('guest-info').style.display = 'none';
+                            var nameDisplay = document.getElementById('user-name-display');
+                            if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                            var phoneDisplay = document.getElementById('user-phone-display');
+                            if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                            renderMyListings();
+                            renderMyWanted();
+                            return;
+                        }
+                    } catch (e) {
+                        console.error('密码验证异常', e);
+                    }
+                } else if (user.password === password) {
+                    var hashed = await hashPassword(password);
+                    user.password = hashed;
+                    localStorage.setItem('yqh_users', JSON.stringify(users));
+                    localStorage.setItem('yqh_user', JSON.stringify(user));
+                    currentUser = user;
+                    alert('登录成功');
+                    document.getElementById('user-info').style.display = 'block';
+                    document.getElementById('guest-info').style.display = 'none';
+                    var nameDisplay = document.getElementById('user-name-display');
+                    if (nameDisplay) nameDisplay.textContent = user.username || user.phone;
+                    var phoneDisplay = document.getElementById('user-phone-display');
+                    if (phoneDisplay) phoneDisplay.textContent = user.phone || '';
+                    renderMyListings();
+                    renderMyWanted();
+                    return;
+                }
+            }
+            
+            alert('用户名或密码错误');
+        }
+        
+        // 注册函数
+        async function doRegister() {
+            const username = document.getElementById('reg-username').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+            
+            if (!username || username.length < 4) {
+                alert('用户名至少需要4个字符');
+                return;
+            }
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                alert('请输入正确的手机号码');
+                return;
+            }
+            if (!password || password.length < 6) {
+                alert('密码至少需要6个字符');
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                return;
+            }
+            
+            let users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+            let existingUser = users.find(u => u.username === username || u.phone === phone);
+            if (existingUser) {
+                alert('用户名或手机号已被注册');
+                return;
+            }
+            
+            var hashedPassword = await hashPassword(password);
+            
+            const newUser = {
+                id: 'usr_' + Date.now(),
+                username: username,
+                phone: phone,
+                password: hashedPassword,
+                role: 'user',
+                created_at: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('yqh_users', JSON.stringify(users));
+            localStorage.setItem('yqh_user', JSON.stringify(newUser));
+
+            try {
+                await fetch(APP_CONFIG.getApiUrl('users', 'POST'), {
+                    method: 'POST',
+                    headers: APP_CONFIG.getApiHeaders(),
+                    body: JSON.stringify(newUser)
+                });
+            } catch (e) {}
+
+            alert('注册成功');
+            window.location.reload();
+        }
+        
+        function switchToRegister() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+        
+        function switchToLogin() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+        }
+        
+        function formatPrice(price) {
+            if (!price) return '面议';
+            if (price === '0') return '面议';
+            if (typeof price === 'string' && price.includes('-')) {
+                return price.replace('-', '-') + '元';
+            }
+            return price.toLocaleString('zh-CN');
+        }
+        
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+        
+        async function getListings() {
+            const localData = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('properties?select=*'), {
+                    headers: APP_CONFIG.getApiHeaders()
+                });
+                const cloudData = await response.json();
+                
+                const allData = [...cloudData];
+                localData.forEach(local => {
+                    if (!allData.find(d => d.id === local.id)) {
+                        allData.push(local);
+                    }
+                });
+                return allData;
+            } catch (e) {
+                return localData;
+            }
+        }
+
+        async function getWantedList() {
+            const localData = JSON.parse(localStorage.getItem('yqh_rent_wanted') || '[]');
+
+            try {
+                const response = await fetch(APP_CONFIG.getApiUrl('requests?select=*'), {
+                    headers: APP_CONFIG.getApiHeaders()
+                });
+                const cloudData = await response.json();
+                
+                const allData = [...cloudData];
+                localData.forEach(local => {
+                    if (!allData.find(d => d.id === local.id)) {
+                        allData.push(local);
+                    }
+                });
+                return allData;
+            } catch (e) {
+                return localData;
+            }
+        }
+
+        function getUsers() {
+            const data = localStorage.getItem('yqh_users');
+            return data ? JSON.parse(data) : [];
+        }
+
+        async function renderMyListings() {
+            const session = localStorage.getItem('yqh_user');
+            if (!session) {
+                document.getElementById('my-listings').innerHTML = '<div class="empty-state"><p>请先登录</p></div>';
+                return;
+            }
+            
+            const user = JSON.parse(session);
+            const allListings = await getListings();
+            
+            if (allListings.length === 0) {
+                document.getElementById('my-listings').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-building"></i>
+                        <h4>暂无房源数据</h4>
+                        <p>请先发布房源</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const listings = allListings.filter(function(l) {
+                return l.user_id === user.id || l.user_phone === user.phone;
+            });
+                        
+            if (listings.length === 0) {
+                document.getElementById('my-listings').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-building"></i>
+                        <h4>暂无发布的房源</h4>
+                        <a href="publish.html" class="btn-call" style="display: inline-flex; margin-top: 1rem;">发布房源</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            const container = document.getElementById('my-listings');
+            
+            container.innerHTML = listings.map(item => `
+                <div class="my-listings-card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #f9f9f9; border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid #eee;">
+                    <div class="my-listings-info" style="flex: 1;">
+                        <h4 style="margin-bottom: 0.5rem;"><a href="detail.html?id=${item.id}" target="_blank" style="color: #333; text-decoration: none;">${item.title}</a></h4>
+                        <p style="color: #666; font-size: 0.85rem; margin: 0;">${item.region} · ${item.area}㎡ · ¥${formatPrice(item.price)}/月</p>
+                        <p style="color: #999; font-size: 0.8rem; margin: 0.25rem 0 0 0;">${formatDate(item.timestamp)}</p>
+                    </div>
+                    <div class="my-listings-actions" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                        <span class="status-badge status-${item.status}" style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; background: ${item.status === 'approved' ? '#d4edda' : '#fff3cd'}; color: ${item.status === 'approved' ? '#155724' : '#856404'};">${item.status === 'approved' ? '已发布' : item.status === 'pending' ? '审核中' : '已拒绝'}</span>
+                        <button class="btn-delete" onclick="deleteMyListing('${item.id}')" style="padding: 0.375rem 0.75rem; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function renderMyWanted() {
+            const session = localStorage.getItem('yqh_user');
+            if (!session) return;
+            
+            const user = JSON.parse(session);
+            const allWanted = await getWantedList();
+            const wanted = allWanted.filter(function(w) {
+                return w.user_id === user.id || w.user_phone === user.phone;
+            });
+            const container = document.getElementById('my-wanted');
+            
+            if (wanted.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h4>暂无发布的求租信息</h4>
+                        <a href="rent-wanted-publish.html" class="btn-call" style="display: inline-flex; margin-top: 1rem;">发布求租</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = wanted.map(item => `
+                <div class="my-listings-card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #f9f9f9; border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid #eee;">
+                    <div class="my-listings-info" style="flex: 1;">
+                        <h4 style="margin-bottom: 0.5rem;"><a href="rent-wanted-detail.html?id=${item.id}" target="_blank" style="color: #333; text-decoration: none;">${item.title}</a></h4>
+                        <p style="color: #666; font-size: 0.85rem; margin: 0;">${item.region} · ${item.area}㎡ · ¥${formatPrice(item.budget)}/月</p>
+                        <p style="color: #999; font-size: 0.8rem; margin: 0.25rem 0 0 0;">${formatDate(item.timestamp)}</p>
+                    </div>
+                    <div class="my-listings-actions" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                        <span class="status-badge status-${item.status}" style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; background: ${item.status === 'approved' ? '#d4edda' : '#fff3cd'}; color: ${item.status === 'approved' ? '#155724' : '#856404'};">${item.status === 'approved' ? '已发布' : item.status === 'pending' ? '审核中' : '已拒绝'}</span>
+                        <button class="btn-delete" onclick="deleteMyWanted('${item.id}')" style="padding: 0.375rem 0.75rem; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMyFavorites() {
+            var favorites = getFavorites();
+            var container = document.getElementById('my-favorites');
+            if (!container) return;
+            
+            if (favorites.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-heart"></i><h4>暂无收藏的房源</h4></div>';
+                return;
+            }
+            
+            container.innerHTML = favorites.map(function(item) {
+                return '<div class="listing-card" style="cursor:pointer;" onclick="window.location.href=\'detail.html?id=' + item.id + '\'">' +
+                    '<div class="listing-image"><img src="' + (item.images && item.images[0] ? item.images[0] : '') + '" alt="' + (item.title || '') + '"></div>' +
+                    '<div class="listing-content">' +
+                    '<h3>' + (item.title || '无标题') + '</h3>' +
+                    '<p>' + (item.region || '') + ' | ' + (item.area || '') + '㎡</p>' +
+                    '<button class="btn-outline" onclick="event.stopPropagation();if(confirm(\'取消收藏？\')){removeFromFavorites(\'' + item.id + '\');renderMyFavorites();}">取消收藏</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+        
+        async function deleteMyListing(id) {
+            const session = localStorage.getItem('yqh_user');
+            if (!session) {
+                alert('请先登录');
+                return;
+            }
+            
+            const listings = await getListings();
+            const listing = listings.find(l => l.id === id);
+            
+            if (!listing) {
+                alert('房源不存在');
+                return;
+            }
+            
+            if (confirm('确定删除此房源吗？')) {
+                try {
+                    await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id, 'DELETE'), {
+                        method: 'DELETE',
+                        headers: APP_CONFIG.getApiHeaders()
+                    });
+                } catch (e) {}
+
+                let list = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+                list = list.filter(l => l.id !== id);
+                localStorage.setItem('yqh_listings', JSON.stringify(list));
+                
+                showToast('删除成功');
+                renderMyListings();
+            }
+        }
+
+        async function deleteMyWanted(id) {
+            const session = localStorage.getItem('yqh_user');
+            if (!session) {
+                alert('请先登录');
+                return;
+            }
+            const user = JSON.parse(session);
+            
+            const wanted = await getWantedList();
+            const item = wanted.find(w => w.id === id);
+            
+            if (!item) {
+                alert('求租信息不存在');
+                return;
+            }
+            
+            if (item.user_id && item.user_id !== user.id) {
+                alert('您只能删除自己发布的求租信息');
+                return;
+            }
+            
+            if (confirm('确定删除此求租信息吗？')) {
+                try {
+                    await fetch(APP_CONFIG.getApiUrl('requests?id=eq.' + id, 'DELETE'), {
+                        method: 'DELETE',
+                        headers: APP_CONFIG.getApiHeaders()
+                    });
+                } catch (e) {}
+                
+                let list = JSON.parse(localStorage.getItem('yqh_rent_wanted') || '[]');
+                list = list.filter(w => w.id !== id);
+                localStorage.setItem('yqh_rent_wanted', JSON.stringify(list));
+                
+                showToast('删除成功');
+                renderMyWanted();
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+            initAuth();
+            checkUserStatus();
+            renderMyListings();
+            renderMyWanted();
+            
+            // 未登录用户的立即登录按钮
+            const guestLoginBtn = document.getElementById('guest-login-btn');
+            if (guestLoginBtn) {
+                guestLoginBtn.onclick = function() {
+                    if (typeof showAuthModal === 'function') {
+                        showAuthModal();
+                    } else if (typeof showLoginModal === 'function') {
+                        showLoginModal();
+                    } else {
+                        alert('登录功能加载中，请稍候再试');
+                    }
+                };
+            }
+            
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const closeBtn = document.getElementById('mobile-nav-close');
+            const mobileNav = document.getElementById('mobile-nav');
+            const overlay = document.getElementById('mobile-nav-overlay');
+            
+            if (menuBtn && mobileNav) {
+                menuBtn.addEventListener('click', () => {
+                    mobileNav.classList.add('active');
+                    overlay.classList.add('active');
+                });
+            }
+            
+            if (closeBtn && mobileNav) {
+                closeBtn.addEventListener('click', () => {
+                    mobileNav.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+            
+            if (overlay && mobileNav) {
+                overlay.addEventListener('click', () => {
+                    mobileNav.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.style.borderBottom = 'none';
+                        b.style.color = 'var(--gray-600)';
+                    });
+                    document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+                    this.classList.add('active');
+                    this.style.borderBottom = '2px solid var(--primary)';
+                    this.style.color = 'var(--gray-800)';
+                    var tabName = this.dataset.tab + '-tab';
+                    document.getElementById(tabName).style.display = 'block';
+                    
+                    if (this.dataset.tab === 'favorites') {
+                        renderMyFavorites();
+                    }
+                });
+            });
+            
+            var logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('yqh_user');
+                    window.location.reload();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
