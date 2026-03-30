@@ -2,6 +2,54 @@ import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL);
 
+function parseFilters(queryParams) {
+    const filters = [];
+    const params = [];
+    let paramIndex = 1;
+
+    for (const [key, value] of Object.entries(queryParams)) {
+        if (key === 'select' || key === 'order' || key === 'limit' || key === 'offset' || key === 'page' || key === 'pageSize') continue;
+
+        if (key === 'id' && value) {
+            const idValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`id = $${paramIndex++}`);
+            params.push(idValue);
+        } else if (key === 'username' && value) {
+            const usernameValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`username = $${paramIndex++}`);
+            params.push(decodeURIComponent(usernameValue));
+        } else if (key === 'phone' && value) {
+            const phoneValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`phone = $${paramIndex++}`);
+            params.push(decodeURIComponent(phoneValue));
+        } else if (key === 'user_id' && value) {
+            const userIdValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`user_id = $${paramIndex++}`);
+            params.push(userIdValue);
+        } else if (key === 'or' && value) {
+            const orMatch = value.match(/or=\(([^)]+)\)/);
+            if (orMatch) {
+                const conditions = orMatch[1].split(',');
+                const orClauses = [];
+                for (const cond of conditions) {
+                    const parts = cond.split('.eq.');
+                    if (parts.length === 2) {
+                        const field = parts[0].trim();
+                        const fieldValue = parts[1].trim();
+                        orClauses.push(`${field} = $${paramIndex++}`);
+                        params.push(decodeURIComponent(fieldValue));
+                    }
+                }
+                if (orClauses.length > 0) {
+                    filters.push(`(${orClauses.join(' OR ')})`);
+                }
+            }
+        }
+    }
+
+    return { filters, params };
+}
+
 export async function GET(request) {
     try {
         const url = new URL(request.url);
@@ -9,18 +57,13 @@ export async function GET(request) {
         const limit = parseInt(url.searchParams.get('limit')) || 100;
         const offset = parseInt(url.searchParams.get('offset')) || 0;
 
+        const { filters, params } = parseFilters(Object.fromEntries(url.searchParams));
+
         let query = `SELECT ${select} FROM users`;
-        const params = [];
-
-        const id = url.searchParams.get('id');
-        if (id) {
-            query += ` WHERE id = $1`;
-            params.push(id.replace('eq.', ''));
-        } else {
-            query += ` ORDER BY created_at DESC`;
+        if (filters.length > 0) {
+            query += ` WHERE ${filters.join(' AND ')}`;
         }
-
-        query += ` LIMIT ${limit} OFFSET ${offset}`;
+        query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
         const result = await sql(query, params);
 
