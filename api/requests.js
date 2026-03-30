@@ -11,17 +11,17 @@ function parseFilters(queryParams) {
         if (key === 'select' || key === 'order' || key === 'limit' || key === 'offset' || key === 'page' || key === 'pageSize') continue;
 
         if (key === 'status' && value) {
+            const statusValue = value.startsWith('eq.') ? value.substring(3) : value;
             filters.push(`status = $${paramIndex++}`);
-            params.push(value);
-        } else if (key.startsWith('status=eq.') && value) {
-            filters.push(`status = $${paramIndex++}`);
-            params.push(key.split('eq.')[1]);
+            params.push(statusValue);
         } else if (key === 'id' && value) {
+            const idValue = value.startsWith('eq.') ? value.substring(3) : value;
             filters.push(`id = $${paramIndex++}`);
-            params.push(value);
-        } else if (key.startsWith('id=eq.')) {
-            filters.push(`id = $${paramIndex++}`);
-            params.push(key.split('eq.')[1]);
+            params.push(idValue);
+        } else if (key === 'user_id' && value) {
+            const userIdValue = value.startsWith('eq.') ? value.substring(3) : value;
+            filters.push(`user_id = $${paramIndex++}`);
+            params.push(userIdValue);
         }
     }
 
