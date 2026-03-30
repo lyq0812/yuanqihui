@@ -86,6 +86,7 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const body = await request.json();
+        console.log('POST /api/properties body:', JSON.stringify(body));
 
         if (!body.id) {
             body.id = generateUUID();
@@ -96,6 +97,9 @@ export async function POST(request) {
         const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
 
         const query = `INSERT INTO properties (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`;
+        console.log('POST /api/properties query:', query);
+        console.log('POST /api/properties values:', values);
+
         const result = await sql(query, values);
 
         return new Response(JSON.stringify(result[0] || result), {
@@ -103,7 +107,8 @@ export async function POST(request) {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error('POST /api/properties error:', error.message);
+        return new Response(JSON.stringify({ error: error.message, detail: error.stack }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
