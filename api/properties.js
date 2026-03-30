@@ -95,7 +95,7 @@ export async function POST(request) {
         const type = body.type || '';
         const location = body.location || '';
         const description = body.description || '';
-        const images = body.images || '[]';
+        const images = Array.isArray(body.images) ? JSON.stringify(body.images) : (body.images || '[]');
         const status = body.status || 'approved';
         const contact = body.contact || '';
         const user_id = body.user_id || '';
