@@ -2,48 +2,44 @@ import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL);
 
-export async function POST(request) {
+export async function GET(request) {
     try {
-        const body = await request.json();
-        console.log('Test INSERT body:', JSON.stringify(body));
+        const url = new URL(request.url);
+        const action = url.searchParams.get('action');
 
-        const testData = {
-            title: '测试房源',
-            region: '测试区域',
-            area: 100,
-            price: '1.5',
-            type: '标准厂房',
-            location: '测试地址',
-            description: '测试描述',
-            images: '[]',
-            status: 'approved',
-            contact: '测试联系',
-            user_id: '51a78b95-cd85-433c-b4a4-3f0662735d73'
-        };
+        if (action === 'insert_test') {
+            const query = `INSERT INTO properties (title, region, area, price, type, location, description, images, status, contact, user_id)
+                          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`;
+            const result = await sql(query, [
+                '测试房源', '测试区域', 100, '1.5', '标准厂房',
+                '测试地址', '测试描述', '[]', 'approved', '测试联系',
+                '51a78b95-cd85-433c-b4a4-3f0662735d73'
+            ]);
 
-        const columns = Object.keys(testData);
-        const values = Object.values(testData);
-        const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+            return new Response(JSON.stringify({
+                success: true,
+                result: result
+            }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
 
-        const query = `INSERT INTO properties (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`;
-        console.log('Test INSERT query:', query);
-        console.log('Test INSERT values:', values);
+        if (action === 'test') {
+            const query = `SELECT * FROM properties LIMIT 3`;
+            const result = await sql(query);
+            return new Response(JSON.stringify({
+                success: true,
+                data: result
+            }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
 
-        const result = await sql(query, values);
-
-        return new Response(JSON.stringify({
-            success: true,
-            result: result
-        }), {
-            status: 201,
+        return new Response(JSON.stringify({ error: 'Unknown action. Use ?action=test or ?action=insert_test' }), {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
-        console.error('Test INSERT error:', error.message);
-        return new Response(JSON.stringify({
-            success: false,
-            error: error.message
-        }), {
+        return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
