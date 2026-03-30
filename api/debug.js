@@ -5,48 +5,29 @@ const sql = neon(process.env.DATABASE_URL);
 export async function GET(request) {
     try {
         const url = new URL(request.url);
-        const table = url.searchParams.get('table') || 'properties';
-        const migrate = url.searchParams.get('migrate');
+        const action = url.searchParams.get('action');
 
-        if (migrate === 'users_phone') {
-            await sql`ALTER TABLE users RENAME COLUMN "电话" TO phone`;
-            return new Response(JSON.stringify({ message: '电话 -> phone done' }));
-        }
-        if (migrate === 'users_username') {
-            await sql`ALTER TABLE users RENAME COLUMN "用户名" TO username`;
-            return new Response(JSON.stringify({ message: '用户名 -> username done' }));
-        }
-        if (migrate === 'users_user_id') {
-            await sql`ALTER TABLE users RENAME COLUMN "身份证" TO user_id`;
-            return new Response(JSON.stringify({ message: '身份证 -> user_id done' }));
-        }
-        if (migrate === 'users_password') {
-            await sql`ALTER TABLE users RENAME COLUMN "密码" TO password`;
-            return new Response(JSON.stringify({ message: '密码 -> password done' }));
+        if (action === 'migrate') {
+            await sql`ALTER TABLE requests RENAME COLUMN "电话" TO phone`;
+            await sql`ALTER TABLE requests RENAME COLUMN "厂房类型" TO property_type`;
+            await sql`ALTER TABLE requests RENAME COLUMN "地区" TO region`;
+            await sql`ALTER TABLE requests RENAME COLUMN "详细地址" TO address`;
+            await sql`ALTER TABLE requests RENAME COLUMN "标题" TO title`;
+            await sql`ALTER TABLE requests RENAME COLUMN "描述" TO description`;
+            await sql`ALTER TABLE requests RENAME COLUMN "状态" TO status`;
+            await sql`ALTER TABLE requests RENAME COLUMN "创建时间" TO created_at`;
+            return new Response(JSON.stringify({ message: 'Requests table migrated' }));
         }
 
-        if (migrate === 'users') {
-            await sql`ALTER TABLE users RENAME COLUMN "电话" TO phone`;
-            await sql`ALTER TABLE users RENAME COLUMN "用户名" TO username`;
-            await sql`ALTER TABLE users RENAME COLUMN "身份证" TO user_id`;
-            await sql`ALTER TABLE users RENAME COLUMN "密码" TO password`;
-            return new Response(JSON.stringify({ message: 'Users table migrated' }));
+        if (action === 'schema') {
+            const result = await sql`
+                SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'requests'
+            `;
+            return new Response(JSON.stringify({ schema: result }));
         }
 
-        let result;
-        if (table === 'users') {
-            result = await sql`SELECT * FROM users LIMIT 3`;
-        } else {
-            result = await sql`SELECT * FROM properties LIMIT 3`;
-        }
-
-        return new Response(JSON.stringify({
-            table,
-            count: result.length,
-            data: result
-        }), {
-            headers: { 'Content-Type': 'application/json' }
-        });
+        const result = await sql`SELECT * FROM requests LIMIT 3`;
+        return new Response(JSON.stringify({ count: result.length, data: result }));
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
