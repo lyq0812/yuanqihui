@@ -2,6 +2,14 @@ import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL);
 
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 function parseFilters(queryParams) {
     const filters = [];
     const params = [];
@@ -74,6 +82,11 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const body = await request.json();
+
+        if (!body.id) {
+            body.id = generateUUID();
+        }
+
         const columns = Object.keys(body);
         const values = Object.values(body);
         const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
