@@ -275,6 +275,36 @@
     <script src="js/toast.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        // 图片压缩函数
+        function compressImage(file, maxWidth, quality, callback) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var width = img.width;
+                    var height = img.height;
+
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    var compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    callback(compressedDataUrl);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
     <style>
         .btn-login, .btn-user {
             padding: 0.5rem 1rem;
@@ -509,12 +539,10 @@
                 var imageInput = document.getElementById('listing-image');
                 var form = document.getElementById('publish-form-container');
                 if (imageInput.files && imageInput.files[0]) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        listing.images = [e.target.result];
+                    compressImage(imageInput.files[0], 800, 0.7, function(compressedImage) {
+                        listing.images = [compressedImage];
                         window.submitPropertyToDB(listing).then(function(success) {
                             if (success) {
-                                // 保存到本地存储
                                 var localListings = JSON.parse(safeGetItem('yqh_listings') || '[]');
                                 listing.id = listing.id || ('local_' + Date.now());
                                 listing.timestamp = Date.now();
@@ -530,8 +558,7 @@
                                 toast.show('发布失败，请重试', 'error');
                             }
                         });
-                    };
-                    reader.readAsDataURL(imageInput.files[0]);
+                    });
                 } else {
                     listing.images = ['https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800'];
                     window.submitPropertyToDB(listing).then(function(success) {
