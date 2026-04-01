@@ -123,17 +123,10 @@ export async function POST(request) {
         const description = sanitizeString(body.description) || '';
         let images = body.images;
         if (Array.isArray(images)) {
-            images = images.map(img => {
-                if (!img) return null;
-                if (img.startsWith('data:')) return img;
-                if (img.startsWith('http')) return sanitizeString(img);
-                return null;
-            }).filter(img => img);
+            images = images.filter(img => img && (img.startsWith('data:') || img.startsWith('http')));
         } else if (typeof images === 'string') {
-            if (images.startsWith('data:') || images.startsWith('http')) {
-                images = images;
-            } else {
-                images = sanitizeString(images);
+            if (!images.startsWith('data:') && !images.startsWith('http')) {
+                images = '[]';
             }
         } else {
             images = '[]';
@@ -142,11 +135,12 @@ export async function POST(request) {
         const contact = sanitizeString(body.contact) || '';
         const user_id = body.user_id || '';
 
-        const result = await sql`
-            INSERT INTO properties (id, title, region, area, price, type, location, description, images, status, contact, user_id)
-            VALUES (${id}, ${title}, ${region}, ${area}, ${price}, ${type}, ${location}, ${description}, ${images}, ${status}, ${contact}, ${user_id})
-            RETURNING *
-        `;
+        const result = await sql(
+            `INSERT INTO properties (id, title, region, area, price, type, location, description, images, status, contact, user_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+             RETURNING *`,
+            [id, title, region, area, price, type, location, description, JSON.stringify(images), status, contact, user_id]
+        );
 
         return new Response(JSON.stringify(result[0] || result), {
             status: 201,

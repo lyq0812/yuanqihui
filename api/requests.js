@@ -122,27 +122,21 @@ export async function POST(request) {
         const status = 'approved';
         let images = body.images;
         if (Array.isArray(images)) {
-            images = images.map(img => {
-                if (!img) return null;
-                if (img.startsWith('data:')) return img;
-                if (img.startsWith('http')) return sanitizeString(img);
-                return null;
-            }).filter(img => img);
+            images = images.filter(img => img && (img.startsWith('data:') || img.startsWith('http')));
         } else if (typeof images === 'string') {
-            if (images.startsWith('data:') || images.startsWith('http')) {
-                images = images;
-            } else {
-                images = sanitizeString(images);
+            if (!images.startsWith('data:') && !images.startsWith('http')) {
+                images = null;
             }
         } else {
             images = null;
         }
 
-        const result = await sql`
-            INSERT INTO requests (id, title, username, contact, user_phone, area, budget, type, location, description, status, images)
-            VALUES (${id}, ${title}, ${username}, ${contact}, ${user_phone}, ${area}, ${budget}, ${type}, ${location}, ${description}, ${status}, ${images})
-            RETURNING *
-        `;
+        const result = await sql(
+            `INSERT INTO requests (id, title, username, contact, user_phone, area, budget, type, location, description, status, images)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+             RETURNING *`,
+            [id, title, username, contact, user_phone, area, budget, type, location, description, status, images]
+        );
 
         return new Response(JSON.stringify(result[0] || result), {
             status: 201,
