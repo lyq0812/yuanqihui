@@ -129,7 +129,7 @@ export async function POST(request) {
         } else {
             images = '[]';
         }
-        const status = 'pending';
+        const status = 'approved';
         const contact = sanitizeString(body.contact) || '';
         const user_id = body.user_id || '';
 

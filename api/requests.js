@@ -119,7 +119,7 @@ export async function POST(request) {
         const type = sanitizeString(body.type) || '';
         const location = sanitizeString(body.location) || '';
         const description = sanitizeString(body.description) || '';
-        const status = 'pending';
+        const status = 'approved';
         let images = body.images;
         if (Array.isArray(images)) {
             images = images.map(img => sanitizeString(img)).filter(img => img && img.startsWith('http'));

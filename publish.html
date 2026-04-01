@@ -438,11 +438,13 @@
                         body: JSON.stringify(property)
                     });
                     console.log('响应状态:', response.status);
+                    console.log('response.ok:', response.ok);
 
-                    if (response.ok || response.status === 201) {
+                    if (response.ok || response.status === 201 || response.status === 200) {
                         if (typeof clearListingsCache === 'function') {
                             clearListingsCache();
                         }
+                        console.log('发布成功!');
                         return true;
                     }
 
@@ -451,7 +453,7 @@
                         data = await response.json();
                         console.log('响应数据:', data);
                     } catch (e) {
-                        console.log('JSON解析失败');
+                        console.log('JSON解析失败, raw text:', await response.text());
                         data = {};
                     }
 
