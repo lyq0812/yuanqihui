@@ -1,6 +1,31 @@
 import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL);
+const API_KEY = process.env.API_SECRET_KEY || '';
+
+function sanitizeString(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[<>'"&]/g, function(match) {
+        const entities = {
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#x27;',
+            '"': '&quot;',
+            '&': '&amp;'
+        };
+        return entities[match] || match;
+    });
+}
+
+function getSecurityHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+    };
+}
 
 function parseFilters(queryParams) {
     const filters = [];
@@ -57,13 +82,14 @@ export async function GET(request) {
     try {
         const url = new URL(request.url);
         const select = url.searchParams.get('select') || '*';
-        const limit = parseInt(url.searchParams.get('limit')) || 100;
+        const limit = Math.min(parseInt(url.searchParams.get('limit')) || 100, 1000);
         const offset = parseInt(url.searchParams.get('offset')) || 0;
         const order = parseOrder(url.searchParams.get('order'));
 
         const { filters, params } = parseFilters(Object.fromEntries(url.searchParams));
 
-        let query = `SELECT ${select} FROM properties`;
+        const safeSelect = select.replace(/[^a-zA-Z0-9_,.*]/g, '');
+        let query = `SELECT ${safeSelect} FROM properties`;
         if (filters.length > 0) {
             query += ` WHERE ${filters.join(' AND ')}`;
         }
@@ -72,14 +98,13 @@ export async function GET(request) {
 
         const result = await sql(query, params);
 
-        // 返回数组格式，与 Supabase REST API 兼容
         return new Response(JSON.stringify(result), {
-            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+            headers: getSecurityHeaders()
         });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     }
 }
@@ -87,22 +112,42 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const body = await request.json();
-        const columns = Object.keys(body);
-        const values = Object.values(body);
-        const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
 
-        const query = `INSERT INTO properties (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`;
-        const result = await sql(query, values);
+        const id = body.id || 'prop_' + Date.now();
+        const title = sanitizeString(body.title) || '';
+        const region = sanitizeString(body.region) || '';
+        const area = parseInt(body.area) || 0;
+        const price = body.price || '0';
+        const type = sanitizeString(body.type) || '';
+        const location = sanitizeString(body.location) || '';
+        const description = sanitizeString(body.description) || '';
+        let images = body.images;
+        if (Array.isArray(images)) {
+            images = images.map(img => sanitizeString(img)).filter(img => img && img.startsWith('http'));
+        } else if (typeof images === 'string') {
+            images = sanitizeString(images);
+        } else {
+            images = '[]';
+        }
+        const status = 'pending';
+        const contact = sanitizeString(body.contact) || '';
+        const user_id = body.user_id || '';
 
-        // 返回数组格式，与 Supabase REST API 兼容
+        const result = await sql`
+            INSERT INTO properties (id, title, region, area, price, type, location, description, images, status, contact, user_id)
+            VALUES (${id}, ${title}, ${region}, ${area}, ${price}, ${type}, ${location}, ${description}, ${images}, ${status}, ${contact}, ${user_id})
+            RETURNING *
+        `;
+
         return new Response(JSON.stringify(result[0] || result), {
             status: 201,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     } catch (error) {
+        console.error('POST /api/listings error:', error.message);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     }
 }
@@ -116,26 +161,46 @@ export async function PATCH(request) {
         if (!id) {
             return new Response(JSON.stringify({ error: 'ID is required' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' }
+                headers: getSecurityHeaders()
             });
         }
 
-        const updates = Object.entries(body)
-            .filter(([key]) => key !== 'id')
+        const updates = {};
+        const allowedFields = ['title', 'region', 'area', 'price', 'type', 'location', 'description', 'images', 'contact'];
+        for (const [key, value] of Object.entries(body)) {
+            if (allowedFields.includes(key)) {
+                if (key === 'images' && Array.isArray(value)) {
+                    updates[key] = value.map(img => sanitizeString(img)).filter(img => img && img.startsWith('http'));
+                } else if (typeof value === 'string') {
+                    updates[key] = sanitizeString(value);
+                } else {
+                    updates[key] = value;
+                }
+            }
+        }
+
+        const updateParts = Object.entries(updates)
             .map(([key, _], i) => `${key} = $${i + 2}`)
             .join(', ');
 
-        const query = `UPDATE properties SET ${updates} WHERE id = $1 RETURNING *`;
-        const values = [id, ...Object.entries(body).filter(([key]) => key !== 'id').map(([_, val]) => val)];
+        if (!updateParts) {
+            return new Response(JSON.stringify({ error: 'No valid fields to update' }), {
+                status: 400,
+                headers: getSecurityHeaders()
+            });
+        }
+
+        const query = `UPDATE properties SET ${updateParts} WHERE id = $1 RETURNING *`;
+        const values = [id, ...Object.values(updates)];
         const result = await sql(query, values);
 
         return new Response(JSON.stringify(result[0] || result), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     }
 }
@@ -144,24 +209,49 @@ export async function DELETE(request) {
     try {
         const url = new URL(request.url);
         const id = url.searchParams.get('id')?.replace('eq.', '');
+        const userId = url.searchParams.get('user_id')?.replace('eq.', '');
+        const requestingUserId = url.searchParams.get('requesting_user_id')?.replace('eq.', '');
 
         if (!id) {
             return new Response(JSON.stringify({ error: 'ID is required' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' }
+                headers: getSecurityHeaders()
             });
         }
 
-        const query = `DELETE FROM properties WHERE id = $1 RETURNING *`;
-        const result = await sql(query, [id]);
+        let query;
+        let params;
+
+        if (userId && requestingUserId) {
+            if (userId !== requestingUserId) {
+                return new Response(JSON.stringify({ error: 'Unauthorized: You can only delete your own listings' }), {
+                    status: 403,
+                    headers: getSecurityHeaders()
+                });
+            }
+            query = `DELETE FROM properties WHERE id = $1 AND user_id = $2 RETURNING *`;
+            params = [id, userId];
+        } else {
+            query = `DELETE FROM properties WHERE id = $1 RETURNING *`;
+            params = [id];
+        }
+
+        const result = await sql(query, params);
+
+        if (result.length === 0) {
+            return new Response(JSON.stringify({ error: 'Listing not found or unauthorized' }), {
+                status: 404,
+                headers: getSecurityHeaders()
+            });
+        }
 
         return new Response(JSON.stringify(result[0] || result), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     }
 }

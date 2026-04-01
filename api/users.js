@@ -1,6 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL);
+const API_KEY = process.env.API_SECRET_KEY || '';
 
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -8,6 +9,36 @@ function generateUUID() {
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
+}
+
+function sanitizeString(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[<>'"&]/g, function(match) {
+        const entities = {
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#x27;',
+            '"': '&quot;',
+            '&': '&amp;'
+        };
+        return entities[match] || match;
+    });
+}
+
+function getSecurityHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+    };
+}
+
+function verifyApiKey(request) {
+    if (!API_KEY) return true;
+    const authHeader = request.headers.get('x-api-key');
+    return authHeader === API_KEY;
 }
 
 function parseFilters(queryParams) {
@@ -62,12 +93,13 @@ export async function GET(request) {
     try {
         const url = new URL(request.url);
         const select = url.searchParams.get('select') || '*';
-        const limit = parseInt(url.searchParams.get('limit')) || 100;
+        const limit = Math.min(parseInt(url.searchParams.get('limit')) || 100, 1000);
         const offset = parseInt(url.searchParams.get('offset')) || 0;
 
         const { filters, params } = parseFilters(Object.fromEntries(url.searchParams));
 
-        let query = `SELECT ${select} FROM users`;
+        const safeSelect = select.replace(/[^a-zA-Z0-9_,.*]/g, '');
+        let query = `SELECT ${safeSelect} FROM users`;
         if (filters.length > 0) {
             query += ` WHERE ${filters.join(' AND ')}`;
         }
@@ -76,12 +108,12 @@ export async function GET(request) {
         const result = await sql(query, params);
 
         return new Response(JSON.stringify(result), {
-            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+            headers: getSecurityHeaders()
         });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     }
 }
@@ -90,9 +122,9 @@ export async function POST(request) {
     try {
         const body = await request.json();
 
-        const user_id = body.user_id || generateUUID();
-        const username = body.username || '';
-        const phone = body.phone || '';
+        const user_id = body.id || body.user_id || generateUUID();
+        const username = sanitizeString(body.username) || '';
+        const phone = sanitizeString(body.phone) || '';
         const password = body.password || '';
         const created_at = body.created_at || new Date().toISOString();
 
@@ -104,13 +136,13 @@ export async function POST(request) {
 
         return new Response(JSON.stringify(result[0] || result), {
             status: 201,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     } catch (error) {
         console.error('POST /api/users error:', error.message);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     }
 }
@@ -124,26 +156,43 @@ export async function PATCH(request) {
         if (!user_id) {
             return new Response(JSON.stringify({ error: 'User ID is required' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' }
+                headers: getSecurityHeaders()
             });
         }
 
-        const updates = Object.entries(body)
-            .filter(([key]) => key !== 'user_id' && key !== 'id')
+        const safeUpdates = {};
+        for (const [key, value] of Object.entries(body)) {
+            if (key !== 'user_id' && key !== 'id' && key !== 'password') {
+                safeUpdates[sanitizeString(key)] = typeof value === 'string' ? sanitizeString(value) : value;
+            }
+        }
+
+        if (body.password) {
+            safeUpdates.password = body.password;
+        }
+
+        const updates = Object.entries(safeUpdates)
             .map(([key, _], i) => `${key} = $${i + 2}`)
             .join(', ');
 
+        if (!updates) {
+            return new Response(JSON.stringify({ error: 'No valid fields to update' }), {
+                status: 400,
+                headers: getSecurityHeaders()
+            });
+        }
+
         const query = `UPDATE users SET ${updates} WHERE user_id = $1 RETURNING *`;
-        const values = [user_id, ...Object.entries(body).filter(([key]) => key !== 'user_id' && key !== 'id').map(([_, val]) => val)];
+        const values = [user_id, ...Object.values(safeUpdates)];
         const result = await sql(query, values);
 
         return new Response(JSON.stringify(result[0] || result), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: getSecurityHeaders()
         });
     }
 }

@@ -302,7 +302,7 @@
                 name: currentUser.username || '',
                 contact: currentUser.phone || '',
                 status: 'approved',
-                user_id: currentUser.user_id,
+                user_id: currentUser.id || currentUser.user_id,
                 user_phone: currentUser.phone || currentUser.username
             };
             
