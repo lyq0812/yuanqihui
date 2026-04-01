@@ -1,4 +1,32 @@
-/* 园企汇 - 主业务逻辑 v9.1 */
+/* 园企汇 - 主业务逻辑 v9.2 */
+
+// ========== localStorage 安全封装 ==========
+function safeLocalStorageGetItem(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch (e) {
+        console.warn('localStorage.getItem失败:', e.message);
+        return null;
+    }
+}
+
+function safeLocalStorageSetItem(key, value) {
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (e) {
+        console.warn('localStorage.setItem失败:', e.message);
+        return false;
+    }
+}
+
+function safeLocalStorageRemoveItem(key) {
+    try {
+        localStorage.removeItem(key);
+    } catch (e) {
+        console.warn('localStorage.removeItem失败:', e.message);
+    }
+}
 
 var currentUser = null;
 
@@ -10,11 +38,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 登录成功处理
 function loginSuccess(user) {
-    localStorage.setItem('yqh_user', JSON.stringify(user));
+    safeLocalStorageSetItem('yqh_user', JSON.stringify(user));
     currentUser = user;
     alert('登录成功');
     closeAuthModal();
-    
+
     // 更新所有页面上的用户信息
     updateAllUserDisplays(user);
 }
@@ -62,8 +90,8 @@ function updateAllUserDisplays(user) {
 // 退出登录
 function logout() {
     currentUser = null;
-    localStorage.removeItem('yqh_user');
-    
+    safeLocalStorageRemoveItem('yqh_user');
+
     // 更新所有页面显示
     document.querySelectorAll('[id="user-info"]').forEach(function(el) {
         el.style.display = 'none';
@@ -77,13 +105,13 @@ function logout() {
     document.querySelectorAll('[id="logout-link"]').forEach(function(el) {
         el.style.display = 'none';
     });
-    
+
     window.location.reload();
 }
 
 // 初始化登录状态
 function initAuth() {
-    var savedUser = localStorage.getItem('yqh_user');
+    var savedUser = safeLocalStorageGetItem('yqh_user');
     if (savedUser) {
         try {
             currentUser = JSON.parse(savedUser);
@@ -215,12 +243,12 @@ async function submitRentWantedRequest(request) {
 
 // 收藏相关函数
 function getFavorites() {
-    var data = localStorage.getItem('yqh_favorites');
+    var data = safeLocalStorageGetItem('yqh_favorites');
     return data ? JSON.parse(data) : [];
 }
 
 function saveFavorites(favorites) {
-    localStorage.setItem('yqh_favorites', JSON.stringify(favorites));
+    safeLocalStorageSetItem('yqh_favorites', JSON.stringify(favorites));
 }
 
 function isFavorite(listingId) {
@@ -248,15 +276,15 @@ function toggleFavorite(listingId) {
         showLoginModal();
         return;
     }
-    
-    var listings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+
+    var listings = JSON.parse(safeLocalStorageGetItem('yqh_listings') || '[]');
     var listing = listings.find(function(l) { return l.id === listingId; });
-    
+
     if (!listing) {
         console.error('房源不存在');
         return;
     }
-    
+
     if (isFavorite(listingId)) {
         removeFromFavorites(listingId);
         alert('已取消收藏');

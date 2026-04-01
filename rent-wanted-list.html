@@ -409,9 +409,19 @@
         }
     </style>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+
         // 用户状态检查
         function checkUserStatus() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             const adminLink = document.getElementById('admin-link');
             const userNameDisplay = document.getElementById('user-name-display');
             const logoutLink = document.getElementById('logout-link');
@@ -443,10 +453,10 @@
 
         // 获取求租列表
         function getWantedList() {
-            const data = localStorage.getItem('yqh_rent_wanted');
+            const data = safeGetItem('yqh_rent_wanted');
             return data ? JSON.parse(data) : [];
         }
-        
+
         // 获取已审核通过的求租
         function getApprovedWanted() {
             const list = getWantedList();
@@ -471,7 +481,7 @@
 
         // 渲染求租卡片
         function renderWantedCard(item) {
-            const isLoggedIn = !!localStorage.getItem('yqh_user');
+            const isLoggedIn = !!safeGetItem('yqh_user');
             const rawContact = item.contact || '';
             const contact = isLoggedIn ? rawContact : rawContact.substring(0, 3) + '****' + rawContact.substring(7);
             const safeTitle = escapeHtml(item.title);
@@ -774,7 +784,7 @@
 
         function getRequestsCache() {
             try {
-                var cached = localStorage.getItem(requestsCacheKey);
+                var cached = safeGetItem(requestsCacheKey);
                 if (!cached) return null;
                 var cacheData = JSON.parse(cached);
                 if (!cacheData || !cacheData.data || !cacheData.timestamp) return null;

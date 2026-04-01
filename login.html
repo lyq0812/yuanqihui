@@ -98,6 +98,25 @@
 
     <script src="js/config.js"></script>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+        function safeSetItem(key, value) {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch (e) {
+                console.warn('localStorage.setItem失败:', e.message);
+                return false;
+            }
+        }
+
         // 简单的本地存储版本，不需要 Supabase
         function showToast(message, type = 'success') {
             alert(message);
@@ -132,7 +151,7 @@
 
             try {
                 // 从本地存储查询用户
-                let users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+                let users = JSON.parse(safeGetItem('yqh_users') || '[]');
 
                 const user = users.find(u => (u.username === username || u.phone === username));
 
@@ -145,7 +164,7 @@
                         const hashArray = Array.from(new Uint8Array(hashBuffer));
                         const hashedPwd = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
                         if (hashedPwd === user.password) {
-                            localStorage.setItem('yqh_user', JSON.stringify(user));
+                            safeSetItem('yqh_user', JSON.stringify(user));
                             showToast('登录成功！正在跳转...');
                             setTimeout(() => {
                                 window.location.href = user.role === 'admin' ? 'admin.html' : 'index.html';
@@ -158,8 +177,8 @@
                         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBytes);
                         const hashArray = Array.from(new Uint8Array(hashBuffer));
                         user.password = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                        localStorage.setItem('yqh_users', JSON.stringify(users));
-                        localStorage.setItem('yqh_user', JSON.stringify(user));
+                        safeSetItem('yqh_users', JSON.stringify(users));
+                        safeSetItem('yqh_user', JSON.stringify(user));
                         showToast('登录成功！正在跳转...');
                         setTimeout(() => {
                             window.location.href = user.role === 'admin' ? 'admin.html' : 'index.html';
@@ -185,8 +204,8 @@
                                 const hashedPwd = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
                                 if (hashedPwd === cloudUser.password) {
                                     users.push(cloudUser);
-                                    localStorage.setItem('yqh_users', JSON.stringify(users));
-                                    localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                                    safeSetItem('yqh_users', JSON.stringify(users));
+                                    safeSetItem('yqh_user', JSON.stringify(cloudUser));
                                     showToast('登录成功！正在跳转...');
                                     setTimeout(() => {
                                         window.location.href = cloudUser.role === 'admin' ? 'admin.html' : 'index.html';
@@ -199,8 +218,8 @@
                                 const hashArray = Array.from(new Uint8Array(hashBuffer));
                                 cloudUser.password = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
                                 users.push(cloudUser);
-                                localStorage.setItem('yqh_users', JSON.stringify(users));
-                                localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                                safeSetItem('yqh_users', JSON.stringify(users));
+                                safeSetItem('yqh_user', JSON.stringify(cloudUser));
                                 showToast('登录成功！正在跳转...');
                                 setTimeout(() => {
                                     window.location.href = cloudUser.role === 'admin' ? 'admin.html' : 'index.html';
@@ -226,7 +245,7 @@
         }
 
         async function logout() {
-            localStorage.removeItem('yqh_user');
+            try { localStorage.removeItem('yqh_user'); } catch (e) {}
             showToast('已退出登录');
             setTimeout(() => window.location.reload(), 1000);
         }

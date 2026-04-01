@@ -170,9 +170,19 @@
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+
         // 用户状态检查
         function checkUserStatus() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             const adminLink = document.getElementById('admin-link');
             const userNameDisplay = document.getElementById('user-name-display');
             const logoutLink = document.getElementById('logout-link');
@@ -237,7 +247,7 @@
 
         function getCache(cacheKey) {
             try {
-                var cached = localStorage.getItem(cacheKey);
+                var cached = safeGetItem(cacheKey);
                 if (!cached) return null;
                 var cacheData = JSON.parse(cached);
                 if (!cacheData || !cacheData.data || !cacheData.timestamp) return null;
@@ -248,13 +258,13 @@
         
         // 获取求租列表
         function getWantedList() {
-            const data = localStorage.getItem('yqh_rent_wanted');
+            const data = safeGetItem('yqh_rent_wanted');
             return data ? JSON.parse(data) : [];
         }
 
         // 获取本地已审核通过的房源（仅用于“附近房源”兜底）
         function getLocalApprovedListings() {
-            const data = localStorage.getItem('yqh_listings');
+            const data = safeGetItem('yqh_listings');
             return data ? JSON.parse(data).filter(item => item.status === 'approved') : [];
         }
 
@@ -302,7 +312,7 @@
                 return;
             }
             
-            const isLoggedIn = !!localStorage.getItem('yqh_user');
+            const isLoggedIn = !!safeGetItem('yqh_user');
             currentWanted = wanted;
             const safeWanted = {
                 region: escapeHtml(wanted.region),

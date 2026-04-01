@@ -228,46 +228,72 @@
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+        function safeSetItem(key, value) {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch (e) {
+                console.warn('localStorage.setItem失败:', e.message);
+                return false;
+            }
+        }
+        function safeRemoveItem(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {
+                console.warn('localStorage.removeItem失败:', e.message);
+            }
+        }
+
         // 登录弹窗函数
         function showLoginModal() {
             document.getElementById('auth-modal').style.display = 'flex';
         }
-        
+
         function closeAuthModal() {
             document.getElementById('auth-modal').style.display = 'none';
         }
-        
+
         function showLogin() {
             document.getElementById('login-form-content').style.display = 'block';
             document.getElementById('register-form-content').style.display = 'none';
             document.getElementById('auth-title').textContent = '用户登录';
         }
-        
+
         function showRegister() {
             document.getElementById('login-form-content').style.display = 'none';
             document.getElementById('register-form-content').style.display = 'block';
             document.getElementById('auth-title').textContent = '用户注册';
         }
-        
+
         // 登录函数
         async function handleLogin(e) {
             e.preventDefault();
             var username = document.getElementById('login-username').value.trim();
             var password = document.getElementById('login-password').value;
-            
+
             if (!username || !password) {
                 alert('请填写用户名和密码');
                 return false;
             }
-            
-            var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+
+            var users = JSON.parse(safeGetItem('yqh_users') || '[]');
             var user = users.find(function(u) { return u.username === username || u.phone === username; });
-            
+
             if (user) {
                 if (user.password.length === 64) {
                     try {
                         if (await verifyPassword(password, user.password)) {
-                            localStorage.setItem('yqh_user', JSON.stringify(user));
+                            safeSetItem('yqh_user', JSON.stringify(user));
                             currentUser = user;
                             alert('登录成功');
                             closeAuthModal();
@@ -287,8 +313,8 @@
                 } else if (user.password === password) {
                     var hashed = await hashPassword(password);
                     user.password = hashed;
-                    localStorage.setItem('yqh_users', JSON.stringify(users));
-                    localStorage.setItem('yqh_user', JSON.stringify(user));
+                    safeSetItem('yqh_users', JSON.stringify(users));
+                    safeSetItem('yqh_user', JSON.stringify(user));
                     currentUser = user;
                     alert('登录成功');
                     closeAuthModal();
@@ -317,8 +343,8 @@
                         if (cloudUser.password && cloudUser.password.length === 64) {
                             if (await verifyPassword(password, cloudUser.password)) {
                                 users.push(cloudUser);
-                                localStorage.setItem('yqh_users', JSON.stringify(users));
-                                localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                                safeSetItem('yqh_users', JSON.stringify(users));
+                                safeSetItem('yqh_user', JSON.stringify(cloudUser));
                                 currentUser = cloudUser;
                                 alert('登录成功');
                                 closeAuthModal();
@@ -336,8 +362,8 @@
                             var hashed = await hashPassword(password);
                             cloudUser.password = hashed;
                             users.push(cloudUser);
-                            localStorage.setItem('yqh_users', JSON.stringify(users));
-                            localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                            safeSetItem('yqh_users', JSON.stringify(users));
+                            safeSetItem('yqh_user', JSON.stringify(cloudUser));
                             currentUser = cloudUser;
                             alert('登录成功');
                             closeAuthModal();
@@ -386,15 +412,15 @@
                 return false;
             }
             
-            var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+            var users = JSON.parse(safeGetItem('yqh_users') || '[]');
             var existingUser = users.find(function(u) { return u.username === username || u.phone === phone; });
             if (existingUser) {
                 alert('用户名或手机号已被注册');
                 return false;
             }
-            
+
             var hashedPassword = await hashPassword(password);
-            
+
             var newUser = {
                 id: 'usr_' + Date.now(),
                 username: username,
@@ -403,10 +429,10 @@
                 role: 'user',
                 created_at: new Date().toISOString()
             };
-            
+
             users.push(newUser);
-            localStorage.setItem('yqh_users', JSON.stringify(users));
-            localStorage.setItem('yqh_user', JSON.stringify(newUser));
+            safeSetItem('yqh_users', JSON.stringify(users));
+            safeSetItem('yqh_user', JSON.stringify(newUser));
 
             fetch(APP_CONFIG.getApiUrl('users', 'POST'), {
                 method: 'POST',
@@ -421,7 +447,7 @@
         }
         
         function checkLogin() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             const userInfo = document.getElementById('user-info');
             const guestInfo = document.getElementById('guest-info');
             const userNameDisplay = document.getElementById('user-name-display');
@@ -443,7 +469,7 @@
         }
         
         function checkUserStatus() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             const userNameDisplay = document.getElementById('user-name-display');
             const logoutLink = document.getElementById('logout-link');
             const loginLink = document.getElementById('login-link');
@@ -490,14 +516,14 @@
                 return;
             }
             
-            let users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+            let users = JSON.parse(safeGetItem('yqh_users') || '[]');
             let user = users.find(u => u.username === username || u.phone === username);
-            
+
             if (user) {
                 if (user.password.length === 64) {
                     try {
                         if (await verifyPassword(password, user.password)) {
-                            localStorage.setItem('yqh_user', JSON.stringify(user));
+                            safeSetItem('yqh_user', JSON.stringify(user));
                             currentUser = user;
                             alert('登录成功');
                             document.getElementById('user-info').style.display = 'block';
@@ -516,8 +542,8 @@
                 } else if (user.password === password) {
                     var hashed = await hashPassword(password);
                     user.password = hashed;
-                    localStorage.setItem('yqh_users', JSON.stringify(users));
-                    localStorage.setItem('yqh_user', JSON.stringify(user));
+                    safeSetItem('yqh_users', JSON.stringify(users));
+                    safeSetItem('yqh_user', JSON.stringify(user));
                     currentUser = user;
                     alert('登录成功');
                     document.getElementById('user-info').style.display = 'block';
@@ -559,15 +585,15 @@
                 return;
             }
             
-            let users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+            let users = JSON.parse(safeGetItem('yqh_users') || '[]');
             let existingUser = users.find(u => u.username === username || u.phone === phone);
             if (existingUser) {
                 alert('用户名或手机号已被注册');
                 return;
             }
-            
+
             var hashedPassword = await hashPassword(password);
-            
+
             const newUser = {
                 id: 'usr_' + Date.now(),
                 username: username,
@@ -576,10 +602,10 @@
                 role: 'user',
                 created_at: new Date().toISOString()
             };
-            
+
             users.push(newUser);
-            localStorage.setItem('yqh_users', JSON.stringify(users));
-            localStorage.setItem('yqh_user', JSON.stringify(newUser));
+            safeSetItem('yqh_users', JSON.stringify(users));
+            safeSetItem('yqh_user', JSON.stringify(newUser));
 
             try {
                 await fetch(APP_CONFIG.getApiUrl('users', 'POST'), {
@@ -623,7 +649,7 @@
         }
         
         async function getListings() {
-            const localData = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+            const localData = JSON.parse(safeGetItem('yqh_listings') || '[]');
 
             try {
                 const response = await fetch(APP_CONFIG.getApiUrl('properties?select=*'), {
@@ -644,7 +670,7 @@
         }
 
         async function getWantedList() {
-            const localData = JSON.parse(localStorage.getItem('yqh_rent_wanted') || '[]');
+            const localData = JSON.parse(safeGetItem('yqh_rent_wanted') || '[]');
 
             try {
                 const response = await fetch(APP_CONFIG.getApiUrl('requests?select=*'), {
@@ -665,12 +691,12 @@
         }
 
         function getUsers() {
-            const data = localStorage.getItem('yqh_users');
+            const data = safeGetItem('yqh_users');
             return data ? JSON.parse(data) : [];
         }
 
         async function renderMyListings() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             if (!session) {
                 document.getElementById('my-listings').innerHTML = '<div class="empty-state"><p>请先登录</p></div>';
                 return;
@@ -725,7 +751,7 @@
         }
 
         async function renderMyWanted() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             if (!session) return;
             
             const user = JSON.parse(session);
@@ -785,20 +811,20 @@
         }
         
         async function deleteMyListing(id) {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             if (!session) {
                 alert('请先登录');
                 return;
             }
-            
+
             const listings = await getListings();
             const listing = listings.find(l => l.id === id);
-            
+
             if (!listing) {
                 alert('房源不存在');
                 return;
             }
-            
+
             if (confirm('确定删除此房源吗？')) {
                 try {
                     await fetch(APP_CONFIG.getApiUrl('properties?id=eq.' + id, 'DELETE'), {
@@ -807,17 +833,17 @@
                     });
                 } catch (e) {}
 
-                let list = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+                let list = JSON.parse(safeGetItem('yqh_listings') || '[]');
                 list = list.filter(l => l.id !== id);
-                localStorage.setItem('yqh_listings', JSON.stringify(list));
-                
+                safeSetItem('yqh_listings', JSON.stringify(list));
+
                 showToast('删除成功');
                 renderMyListings();
             }
         }
 
         async function deleteMyWanted(id) {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             if (!session) {
                 alert('请先登录');
                 return;
@@ -845,9 +871,9 @@
                     });
                 } catch (e) {}
                 
-                let list = JSON.parse(localStorage.getItem('yqh_rent_wanted') || '[]');
+                let list = JSON.parse(safeGetItem('yqh_rent_wanted') || '[]');
                 list = list.filter(w => w.id !== id);
-                localStorage.setItem('yqh_rent_wanted', JSON.stringify(list));
+                safeSetItem('yqh_rent_wanted', JSON.stringify(list));
                 
                 showToast('删除成功');
                 renderMyWanted();
@@ -937,7 +963,7 @@
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    localStorage.removeItem('yqh_user');
+                    safeRemoveItem('yqh_user');
                     window.location.reload();
                 });
             }

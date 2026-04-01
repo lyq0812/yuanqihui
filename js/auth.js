@@ -1,9 +1,95 @@
-// 园企汇 - 统一登录系统 v7.0 (极致性能优化版)
+// 园企汇 - 统一登录系统 v8.0 (localStorage容错版)
 
 (function() {
     // 确保配置文件已加载
     if (typeof window.APP_CONFIG === 'undefined') {
         console.error('配置文件未加载，请在HTML中先引入config.js');
+    }
+
+    // ========== localStorage 安全封装 ==========
+    var localStorageAvailable = true;
+
+    function isLocalStorageAvailable() {
+        try {
+            var testKey = '__yqh_storage_test__';
+            localStorage.setItem(testKey, 'test');
+            localStorage.removeItem(testKey);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function safeGetItem(key) {
+        if (!localStorageAvailable) return null;
+        try {
+            return localStorage.getItem(key);
+        } catch (e) {
+            console.warn('localStorage.getItem失败:', e.message);
+            return null;
+        }
+    }
+
+    function safeSetItem(key, value) {
+        if (!localStorageAvailable) return false;
+        try {
+            localStorage.setItem(key, value);
+            return true;
+        } catch (e) {
+            console.warn('localStorage.setItem失败:', e.message);
+            if (e.name === 'QuotaExceededError') {
+                try {
+                    localStorage.removeItem('yqh_listings_cache');
+                    localStorage.removeItem('yqh_requests_cache');
+                    localStorage.removeItem('yqh_prefetch_cache');
+                    localStorage.setItem(key, value);
+                    return true;
+                } catch (e2) {
+                    console.warn('清理缓存后仍然失败:', e2.message);
+                }
+            }
+            return false;
+        }
+    }
+
+    function safeRemoveItem(key) {
+        if (!localStorageAvailable) return;
+        try {
+            localStorage.removeItem(key);
+        } catch (e) {
+            console.warn('localStorage.removeItem失败:', e.message);
+        }
+    }
+
+    // 初始化检测
+    localStorageAvailable = isLocalStorageAvailable();
+    if (!localStorageAvailable) {
+        console.warn('localStorage不可用，将使用内存存储，部分功能可能受限');
+    }
+
+    // ========== 内存存储 Fallback ==========
+    var memoryStorage = {};
+
+    function getItemFromStorage(key) {
+        if (localStorageAvailable) {
+            return safeGetItem(key);
+        }
+        return memoryStorage[key] || null;
+    }
+
+    function setItemToStorage(key, value) {
+        if (localStorageAvailable) {
+            return safeSetItem(key, value);
+        }
+        memoryStorage[key] = value;
+        return true;
+    }
+
+    function removeItemFromStorage(key) {
+        if (localStorageAvailable) {
+            safeRemoveItem(key);
+        }
+        delete memoryStorage[key];
     }
 
     // ========== 缓存配置 (1小时有效期) ==========
@@ -14,7 +100,7 @@
 
     function getCache(cacheKey) {
         try {
-            var cached = localStorage.getItem(cacheKey);
+            var cached = getItemFromStorage(cacheKey);
             if (!cached) return null;
             var cacheData = JSON.parse(cached);
             if (!cacheData || !cacheData.data || !cacheData.timestamp) return null;
@@ -25,7 +111,7 @@
 
     function setCache(cacheKey, data) {
         try {
-            localStorage.setItem(cacheKey, JSON.stringify({
+            setItemToStorage(cacheKey, JSON.stringify({
                 data: data,
                 timestamp: Date.now()
             }));
@@ -35,7 +121,7 @@
     // 检查缓存是否过期
     function isCacheExpired(cacheKey) {
         try {
-            var cached = localStorage.getItem(cacheKey);
+            var cached = getItemFromStorage(cacheKey);
             if (!cached) return true;
             var cacheData = JSON.parse(cached);
             if (!cacheData || !cacheData.timestamp) return true;
@@ -46,7 +132,7 @@
     // 获取缓存时间戳
     function getCacheTimestamp(cacheKey) {
         try {
-            var cached = localStorage.getItem(cacheKey);
+            var cached = getItemFromStorage(cacheKey);
             if (!cached) return 0;
             var cacheData = JSON.parse(cached);
             return cacheData && cacheData.timestamp ? cacheData.timestamp : 0;
@@ -54,12 +140,12 @@
     }
 
     function clearListingsCache() {
-        localStorage.removeItem(LISTINGS_CACHE_KEY);
-        localStorage.removeItem(PREFETCH_CACHE_KEY);
+        removeItemFromStorage(LISTINGS_CACHE_KEY);
+        removeItemFromStorage(PREFETCH_CACHE_KEY);
     }
 
     function clearRequestsCache() {
-        localStorage.removeItem(REQUESTS_CACHE_KEY);
+        removeItemFromStorage(REQUESTS_CACHE_KEY);
     }
 
     // 暴露缓存清理函数
@@ -158,20 +244,21 @@
         e.preventDefault();
         var username = document.getElementById('login-username').value.trim();
         var password = document.getElementById('login-password').value;
-        
+
         if (!username || !password) {
             alert('请填写用户名和密码');
             return false;
         }
-        
-        var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+
+        var usersData = getItemFromStorage('yqh_users') || '[]';
+        var users = JSON.parse(usersData);
         var user = users.find(function(u) { return u.username === username || u.phone === username; });
-        
+
         if (user) {
             if (user.password.length === 64) {
                 try {
                     if (await verifyPassword(password, user.password)) {
-                        localStorage.setItem('yqh_user', JSON.stringify(user));
+                        setItemToStorage('yqh_user', JSON.stringify(user));
                         alert('登录成功');
                         window.location.reload();
                         return false;
@@ -182,19 +269,19 @@
             } else if (user.password === password) {
                 var hashed = await hashPassword(password);
                 user.password = hashed;
-                localStorage.setItem('yqh_users', JSON.stringify(users));
-                localStorage.setItem('yqh_user', JSON.stringify(user));
+                setItemToStorage('yqh_users', JSON.stringify(users));
+                setItemToStorage('yqh_user', JSON.stringify(user));
                 alert('登录成功');
                 window.location.reload();
                 return false;
             }
         }
-        
+
         try {
             var cloudResponse = await fetch(APP_CONFIG.getApiUrl('users?select=*&or=(username.eq.' + encodeURIComponent(username) + ',phone.eq.' + encodeURIComponent(username) + ')'), {
                 headers: APP_CONFIG.getApiHeaders()
             });
-            
+
             if (cloudResponse.ok) {
                 var cloudUsers = await cloudResponse.json();
                 if (cloudUsers && cloudUsers.length > 0) {
@@ -202,8 +289,8 @@
                     if (cloudUser.password && cloudUser.password.length === 64) {
                         if (await verifyPassword(password, cloudUser.password)) {
                             users.push(cloudUser);
-                            localStorage.setItem('yqh_users', JSON.stringify(users));
-                            localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                            setItemToStorage('yqh_users', JSON.stringify(users));
+                            setItemToStorage('yqh_user', JSON.stringify(cloudUser));
                             alert('登录成功');
                             window.location.reload();
                             return false;
@@ -217,8 +304,8 @@
                         } else {
                             users.push(cloudUser);
                         }
-                        localStorage.setItem('yqh_users', JSON.stringify(users));
-                        localStorage.setItem('yqh_user', JSON.stringify(cloudUser));
+                        setItemToStorage('yqh_users', JSON.stringify(users));
+                        setItemToStorage('yqh_user', JSON.stringify(cloudUser));
                         alert('登录成功');
                         window.location.reload();
                         return false;
@@ -228,7 +315,7 @@
         } catch (cloudError) {
             console.error('云端验证失败', cloudError);
         }
-        
+
         alert('用户名或密码错误');
         return false;
     };
@@ -239,7 +326,7 @@
         var phone = document.getElementById('reg-phone').value.trim();
         var password = document.getElementById('reg-password').value;
         var confirmPassword = document.getElementById('reg-confirm-password').value;
-        
+
         if (!username || username.length < 4) {
             alert('用户名至少需要4个字符');
             return false;
@@ -256,35 +343,37 @@
             alert('两次输入的密码不一致');
             return false;
         }
-        
-        var users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+
+        var usersData = getItemFromStorage('yqh_users') || '[]';
+        var users = JSON.parse(usersData);
         var existingUser = users.find(function(u) { return u.username === username || u.phone === phone; });
         if (existingUser) {
             alert('用户名或手机号已被注册');
             return false;
         }
-        
+
         var hashedPassword = await hashPassword(password);
-        
+
         var newUser = {
             id: 'usr_' + Date.now(),
+            user_id: 'usr_' + Date.now(),
             username: username,
             phone: phone,
             password: hashedPassword,
             role: 'user',
             created_at: new Date().toISOString()
         };
-        
+
         users.push(newUser);
-        localStorage.setItem('yqh_users', JSON.stringify(users));
-        localStorage.setItem('yqh_user', JSON.stringify(newUser));
+        setItemToStorage('yqh_users', JSON.stringify(users));
+        setItemToStorage('yqh_user', JSON.stringify(newUser));
 
         fetch(APP_CONFIG.getApiUrl('users', 'POST'), {
             method: 'POST',
             headers: APP_CONFIG.getApiHeaders(),
             body: JSON.stringify(newUser)
         }).catch(function(e) { console.error('保存到云端失败', e); });
-        
+
         alert('注册成功');
         window.location.reload();
         return false;
@@ -409,7 +498,7 @@
     // 获取预加载的下一页数据
     window.getPrefetchedPage = function(page) {
         try {
-            var cached = localStorage.getItem(PREFETCH_CACHE_KEY + '_' + page);
+            var cached = getItemFromStorage(PREFETCH_CACHE_KEY + '_' + page);
             if (cached) {
                 var data = JSON.parse(cached);
                 if (data && data.data) return Promise.resolve(data.data);

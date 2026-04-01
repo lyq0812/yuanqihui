@@ -109,6 +109,25 @@
 
     <script src="js/config.js"></script>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+        function safeSetItem(key, value) {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch (e) {
+                console.warn('localStorage.setItem失败:', e.message);
+                return false;
+            }
+        }
+
         // 简单的本地存储版本，不需要 Supabase
         function showToast(message, type = 'success') {
             alert(message);
@@ -148,7 +167,7 @@
 
             try {
                 // 使用本地存储检查用户是否已存在
-                let users = JSON.parse(localStorage.getItem('yqh_users') || '[]');
+                let users = JSON.parse(safeGetItem('yqh_users') || '[]');
 
                 // 检查用户名和手机号是否已存在
                 const existingUser = users.find(u => u.username === username || u.phone === phone);
@@ -195,7 +214,7 @@
 
                 // 保存到本地存储
                 users.push(newUser);
-                localStorage.setItem('yqh_users', JSON.stringify(users));
+                safeSetItem('yqh_users', JSON.stringify(users));
 
                 // 保存到云端
                 try {
@@ -209,7 +228,7 @@
                 }
 
                 // 自动登录
-                localStorage.setItem('yqh_user', JSON.stringify(newUser));
+                safeSetItem('yqh_user', JSON.stringify(newUser));
                 showToast('注册成功！正在跳转...');
                 setTimeout(() => window.location.href = 'index.html', 1500);
 

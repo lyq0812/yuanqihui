@@ -292,9 +292,19 @@
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+
         // 检查管理员权限
         function checkAdminAuth() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             const loginRequired = document.getElementById('admin-login-required');
             const adminContent = document.getElementById('admin-content');
             

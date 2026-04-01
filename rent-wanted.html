@@ -261,9 +261,19 @@
     <script src="js/auth.js"></script>
      <script src="js/main.js"></script>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+
         // 用户状态检查
         function checkUserStatus() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             const adminLink = document.getElementById('admin-link');
             const userNameDisplay = document.getElementById('user-name-display');
             const logoutLink = document.getElementById('logout-link');
@@ -315,9 +325,9 @@
             };
             
             // 保存到本地存储
-            const requests = JSON.parse(localStorage.getItem('yqh_rent_wanted') || '[]');
+            const requests = JSON.parse(safeGetItem('yqh_rent_wanted') || '[]');
             requests.push(request);
-            localStorage.setItem('yqh_rent_wanted', JSON.stringify(requests));
+            try { localStorage.setItem('yqh_rent_wanted', JSON.stringify(requests)); } catch (e) { console.warn('localStorage保存失败', e); }
             
             // 显示成功
             showModal('success-modal');

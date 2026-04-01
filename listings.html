@@ -254,28 +254,38 @@
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+
         // 本地存储key (使用不同名称避免重复)
         var LOCAL_STORAGE_KEYS = { LISTINGS: 'yqh_listings', FAVORITES: 'yqh_favorites' };
-        
+
         // 工具函数
         function localFormatPrice(price) {
             return price ? price.toLocaleString('zh-CN') : '0';
         }
-        
+
         function localGetFavorites() {
-            const data = localStorage.getItem(LOCAL_STORAGE_KEYS.FAVORITES);
+            const data = safeGetItem(LOCAL_STORAGE_KEYS.FAVORITES);
             return data ? JSON.parse(data) : [];
         }
-        
+
         function localIsFavorite(id) {
             return localGetFavorites().includes(id);
         }
-        
+
         function localGetListings() {
-            const data = localStorage.getItem(LOCAL_STORAGE_KEYS.LISTINGS);
+            const data = safeGetItem(LOCAL_STORAGE_KEYS.LISTINGS);
             return data ? JSON.parse(data) : [];
         }
-        
+
         // 本地筛选函数
         function localFilterListings(listings, filters) {
             return listings.filter(item => {
@@ -462,7 +472,7 @@
         
         // 用户状态检查
         function checkUserStatus() {
-            const session = localStorage.getItem('yqh_user');
+            const session = safeGetItem('yqh_user');
             const adminLink = document.getElementById('admin-link');
             const userNameDisplay = document.getElementById('user-name-display');
             const logoutLink = document.getElementById('logout-link');
@@ -539,7 +549,7 @@
             // 1. 先检查缓存
             var cached = (function() {
                 try {
-                    var c = localStorage.getItem('yqh_listings_cache');
+                    var c = safeGetItem('yqh_listings_cache');
                     if (c) {
                         var d = JSON.parse(c);
                         if (d && d.data && Array.isArray(d.data)) return d.data;

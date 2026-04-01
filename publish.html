@@ -328,10 +328,29 @@
         }
     </style>
     <script>
+        // localStorage 安全封装
+        function safeGetItem(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                console.warn('localStorage.getItem失败:', e.message);
+                return null;
+            }
+        }
+        function safeSetItem(key, value) {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch (e) {
+                console.warn('localStorage.setItem失败:', e.message);
+                return false;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // 用户状态检查
             function checkUserStatus() {
-                const session = localStorage.getItem('yqh_user');
+                const session = safeGetItem('yqh_user');
                 const adminLink = document.getElementById('admin-link');
                 const userNameDisplay = document.getElementById('user-name-display');
                 const logoutLink = document.getElementById('logout-link');
@@ -494,11 +513,11 @@
                         window.submitPropertyToDB(listing).then(function(success) {
                             if (success) {
                                 // 保存到本地存储
-                                var localListings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+                                var localListings = JSON.parse(safeGetItem('yqh_listings') || '[]');
                                 listing.id = listing.id || ('local_' + Date.now());
                                 listing.timestamp = Date.now();
                                 localListings.unshift(listing);
-                                localStorage.setItem('yqh_listings', JSON.stringify(localListings));
+                                safeSetItem('yqh_listings', JSON.stringify(localListings));
 
                                 toast.show('发布成功！', 'success');
                                 if (form) form.reset();
@@ -516,11 +535,11 @@
                     window.submitPropertyToDB(listing).then(function(success) {
                         if (success) {
                             // 保存到本地存储
-                            var localListings = JSON.parse(localStorage.getItem('yqh_listings') || '[]');
+                            var localListings = JSON.parse(safeGetItem('yqh_listings') || '[]');
                             listing.id = listing.id || ('local_' + Date.now());
                             listing.timestamp = Date.now();
                             localListings.unshift(listing);
-                            localStorage.setItem('yqh_listings', JSON.stringify(localListings));
+                            safeSetItem('yqh_listings', JSON.stringify(localListings));
 
                             toast.show('发布成功！', 'success');
                             if (form) form.reset();
