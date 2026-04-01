@@ -122,9 +122,18 @@ export async function POST(request) {
         const status = 'approved';
         let images = body.images;
         if (Array.isArray(images)) {
-            images = images.map(img => sanitizeString(img)).filter(img => img && img.startsWith('http'));
+            images = images.map(img => {
+                if (!img) return null;
+                if (img.startsWith('data:')) return img;
+                if (img.startsWith('http')) return sanitizeString(img);
+                return null;
+            }).filter(img => img);
         } else if (typeof images === 'string') {
-            images = sanitizeString(images);
+            if (images.startsWith('data:') || images.startsWith('http')) {
+                images = images;
+            } else {
+                images = sanitizeString(images);
+            }
         } else {
             images = null;
         }
