@@ -138,13 +138,14 @@ export async function POST(request) {
         const status = 'approved';
         const contact = sanitizeString(body.contact) || '';
         const user_id = body.user_id || '';
+        const created_at = new Date().toISOString();
 
         const sql = createSqlClient();
         const result = await sql(
-            `INSERT INTO properties (id, title, region, area, price, type, location, description, images, status, contact, user_id)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            `INSERT INTO properties (id, title, region, area, price, type, location, description, images, status, contact, user_id, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
              RETURNING *`,
-            [id, title, region, area, price, type, location, description, JSON.stringify(images), status, contact, user_id]
+            [id, title, region, area, price, type, location, description, JSON.stringify(images), status, contact, user_id, created_at]
         );
 
         return new Response(JSON.stringify(result[0] || result), {

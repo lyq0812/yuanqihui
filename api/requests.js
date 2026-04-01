@@ -134,13 +134,14 @@ export async function POST(request) {
         } else {
             images = null;
         }
+        const created_at = new Date().toISOString();
 
         const sql = createSqlClient();
         const result = await sql(
-            `INSERT INTO requests (id, title, username, contact, user_phone, area, budget, type, location, description, status, images)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            `INSERT INTO requests (id, title, username, contact, user_phone, area, budget, type, location, description, status, images, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
              RETURNING *`,
-            [id, title, username, contact, user_phone, area, budget, type, location, description, status, images]
+            [id, title, username, contact, user_phone, area, budget, type, location, description, status, images, created_at]
         );
 
         return new Response(JSON.stringify(result[0] || result), {
