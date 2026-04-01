@@ -1,6 +1,9 @@
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_URL);
+function createSqlClient() {
+    return neon(process.env.DATABASE_URL);
+}
+
 const API_KEY = process.env.API_SECRET_KEY || '';
 
 function sanitizeString(str) {
@@ -96,6 +99,7 @@ export async function GET(request) {
         query += ` ORDER BY ${order}`;
         query += ` LIMIT ${limit} OFFSET ${offset}`;
 
+        const sql = createSqlClient();
         const result = await sql(query, params);
 
         return new Response(JSON.stringify(result), {
@@ -135,6 +139,7 @@ export async function POST(request) {
         const contact = sanitizeString(body.contact) || '';
         const user_id = body.user_id || '';
 
+        const sql = createSqlClient();
         const result = await sql(
             `INSERT INTO properties (id, title, region, area, price, type, location, description, images, status, contact, user_id)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
@@ -195,6 +200,7 @@ export async function PATCH(request) {
 
         const query = `UPDATE properties SET ${updateParts} WHERE id = $1 RETURNING *`;
         const values = [id, ...Object.values(updates)];
+        const sql = createSqlClient();
         const result = await sql(query, values);
 
         return new Response(JSON.stringify(result[0] || result), {
@@ -239,6 +245,7 @@ export async function DELETE(request) {
             params = [id];
         }
 
+        const sql = createSqlClient();
         const result = await sql(query, params);
 
         if (result.length === 0) {
