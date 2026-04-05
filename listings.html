@@ -661,7 +661,10 @@
                 paginationHtml += '<button ' + (currentPage === totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage + 1) + ')"><i class="fas fa-chevron-right"></i></button>';
             }
             var paginationEl = document.getElementById('pagination');
-            if (paginationEl) paginationEl.innerHTML = paginationHtml;
+            if (paginationEl) {
+                paginationEl.innerHTML = paginationHtml;
+                paginationEl.style.display = totalPages > 1 ? 'flex' : 'none';
+            }
 
             updateLoadMoreVisibility();
         }
