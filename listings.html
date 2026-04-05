@@ -623,6 +623,7 @@
             else if (sort === 'area-asc') filtered.sort(function(a, b) { return a.area - b.area; });
             else filtered.sort(function(a, b) { return (b.created_at || b.timestamp) - (a.created_at || a.timestamp); });
 
+            filteredListings = filtered;
             listingsTotalCount = filtered.length;
             currentPage = 1;
             renderFilteredPage(filtered);
