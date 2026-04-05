@@ -707,16 +707,12 @@
         // 更新加载更多按钮显示
         function updateLoadMoreVisibility() {
             var loadMoreContainer = document.getElementById('listings-load-more');
-            var pagination = document.getElementById('pagination');
             if (loadMoreContainer) {
                 if (listingsAllData.length >= listingsTotalCount) {
                     loadMoreContainer.style.display = 'none';
                 } else {
                     loadMoreContainer.style.display = 'block';
                 }
-            }
-            if (pagination) {
-                pagination.style.display = 'none';
             }
         }
 
