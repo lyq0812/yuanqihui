@@ -1,6 +1,9 @@
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_URL);
+function createSqlClient() {
+    return neon(process.env.DATABASE_URL);
+}
+
 const API_KEY = process.env.API_SECRET_KEY || '';
 
 function generateUUID() {
@@ -105,6 +108,7 @@ export async function GET(request) {
         }
         query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
+        const sql = createSqlClient();
         const result = await sql(query, params);
 
         return new Response(JSON.stringify(result), {
@@ -128,11 +132,13 @@ export async function POST(request) {
         const password = body.password || '';
         const created_at = body.created_at || new Date().toISOString();
 
-        const result = await sql`
-            INSERT INTO users (user_id, username, phone, password, created_at)
-            VALUES (${user_id}, ${username}, ${phone}, ${password}, ${created_at})
-            RETURNING *
-        `;
+        const sql = createSqlClient();
+        const result = await sql(
+            `INSERT INTO users (user_id, username, phone, password, created_at)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING *`,
+            [user_id, username, phone, password, created_at]
+        );
 
         return new Response(JSON.stringify(result[0] || result), {
             status: 201,
@@ -184,6 +190,7 @@ export async function PATCH(request) {
 
         const query = `UPDATE users SET ${updates} WHERE user_id = $1 RETURNING *`;
         const values = [user_id, ...Object.values(safeUpdates)];
+        const sql = createSqlClient();
         const result = await sql(query, values);
 
         return new Response(JSON.stringify(result[0] || result), {
